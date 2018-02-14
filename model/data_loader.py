@@ -23,23 +23,34 @@ class SIGNSDataset(Dataset):
     """
     A standard PyTorch definition of Dataset which defines the functions __len__ and __getitem__.
     """
-    def __init__(self, data_dir, transform):
+    def __init__(self, data_dir, image_list_file, transform):
         """
         Store the filenames of the jpgs to use. Specifies transforms to apply on images.
 
         Args:
             data_dir: (string) directory containing the dataset
+            image_list_file: (string) file list train and test names
             transform: (torchvision.transforms) transformation to apply on image
         """
-        self.filenames = os.listdir(data_dir)
-        self.filenames = [os.path.join(data_dir, f) for f in self.filenames if f.endswith('.jpg')]
+        image_names = []
+        labels = []
+        with open(image_list_file, "r") as f:
+            for line in f:
+                items = line.split()
+                image_name = items[0]
+                image_name = os.path.join(data_dir, image_name)
+                image_names.append(image_name)
+                label = items[1:]
+                label = [int(i) for i in label]
+                labels.append(label)
 
-        self.labels = [int(filename.split('/')[-1][0]) for filename in self.filenames]
+        self.image_names = image_names
+        self.labels = labels
         self.transform = transform
 
     def __len__(self):
         # return size of dataset
-        return len(self.filenames)
+        return len(self.image_names)
 
     def __getitem__(self, idx):
         """
