@@ -71,7 +71,7 @@ class SIGNSDataset(Dataset):
             image: (Tensor) transformed image
             label: (int) corresponding label of image
         """
-        image = Image.open(self.filenames[idx]).convert('RGB')  # PIL image
+        image = Image.open(self.image_names[idx]).convert('RGB')  # PIL image
         if self.transform is not None:
             image = self.transform(image)
         return image, torch.FloatTensor(self.labels[idx])
