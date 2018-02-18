@@ -13,20 +13,14 @@ train_transformer = transforms.Compose([
                                         transforms.Resize(256),  # downscale the size
                                         transforms.TenCrop(224), # four corners and the central crop plus the horizon flipped
                                         transforms.Lambda
-                                        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-                                        transforms.Lambda        # normalize
-                                        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
-                                    ])
+                                        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops]))])
 
 # loader for evaluation, no horizontal flip
 eval_transformer = transforms.Compose([
                                         transforms.Resize(256),
                                         transforms.TenCrop(224),
                                         transforms.Lambda
-                                        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
-                                        transforms.Lambda
-                                        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
-                                    ])
+                                        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops]))])
 class SIGNSDataset(Dataset):
     """
     A standard PyTorch definition of Dataset which defines the functions __len__ and __getitem__.
