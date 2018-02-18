@@ -1,15 +1,15 @@
-"""Split the SIGNS dataset into train/val/test and resize images to 64x64.
+"""Split the SIGNS dataset into train/val/test and resize images to 224x224.
 
 The SIGNS dataset comes into the following format:
     train_signs/
-        0_IMG_5864.jpg
+        0_IMG_58224.jpg
         ...
     test_signs/
         0_IMG_5942.jpg
         ...
 
 Original images have size (3024, 3024).
-Resizing to (64, 64) reduces the dataset size from 1.16 GB to 4.7 MB, and loading smaller images
+Resizing to (224, 224) reduces the dataset size from 1.16 GB to 4.7 MB, and loading smaller images
 makes training faster.
 
 We already have a test set created, so we only need to split "train_signs" into train and val sets.
@@ -24,11 +24,11 @@ import os
 from PIL import Image
 from tqdm import tqdm
 
-SIZE = 64
+SIZE = 224
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/SIGNS', help="Directory with the SIGNS dataset")
-parser.add_argument('--output_dir', default='data/64x64_SIGNS', help="Where to write the new data")
+parser.add_argument('--output_dir', default='data/224x224_SIGNS', help="Where to write the new data")
 
 
 def resize_and_save(filename, output_dir, size=SIZE):

@@ -5,20 +5,28 @@ from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
 
+
 # borrowed from http://pytorch.org/tutorials/advanced/neural_style_tutorial.html
 # and http://pytorch.org/tutorials/beginner/data_loading_tutorial.html
 # define a training image loader that specifies transforms on images. See documentation for more details.
 train_transformer = transforms.Compose([
-    transforms.Resize(64),  # resize the image to 64x64 (remove if images are already 64x64)
-    transforms.RandomHorizontalFlip(),  # randomly flip image horizontally
-    transforms.ToTensor()])  # transform it into a torch tensor
+                                        transforms.Resize(256),  # downscale the size
+                                        transforms.TenCrop(224), # four corners and the central crop plus the horizon flipped
+                                        transforms.Lambda
+                                        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
+                                        transforms.Lambda        # normalize
+                                        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
+                                    ])
 
 # loader for evaluation, no horizontal flip
 eval_transformer = transforms.Compose([
-    transforms.Resize(64),  # resize the image to 64x64 (remove if images are already 64x64)
-    transforms.ToTensor()])  # transform it into a torch tensor
-
-
+                                        transforms.Resize(256),
+                                        transforms.TenCrop(224),
+                                        transforms.Lambda
+                                        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])),
+                                        transforms.Lambda
+                                        (lambda crops: torch.stack([normalize(crop) for crop in crops]))
+                                    ])
 class SIGNSDataset(Dataset):
     """
     A standard PyTorch definition of Dataset which defines the functions __len__ and __getitem__.
@@ -63,9 +71,10 @@ class SIGNSDataset(Dataset):
             image: (Tensor) transformed image
             label: (int) corresponding label of image
         """
-        image = Image.open(self.filenames[idx])  # PIL image
-        image = self.transform(image)
-        return image, self.labels[idx]
+        image = Image.open(self.filenames[idx]).convert('RGB')  # PIL image
+        if self.transform is not None:
+            image = self.transform(image)
+        return image, torch.FloatTensor(self.labels[idx])
 
 
 def fetch_dataloader(types, data_dir, params):
@@ -84,15 +93,21 @@ def fetch_dataloader(types, data_dir, params):
 
     for split in ['train', 'val', 'test']:
         if split in types:
-            path = os.path.join(data_dir, "{}_signs".format(split))
+            image_list_file = os.path.join(data_dir, "{}_list.txt".format(split))
 
             # use the train_transformer if training data, else use eval_transformer without random flip
             if split == 'train':
-                dl = DataLoader(SIGNSDataset(path, train_transformer), batch_size=params.batch_size, shuffle=True,
-                                        num_workers=params.num_workers,
-                                        pin_memory=params.cuda)
+                dl = DataLoader(SIGNSDataset(data_dir=data_dir,
+                                             image_list_file=image_list_file,
+                                             transform=train_transformer),
+                                batch_size=params.batch_size, shuffle=True,
+                                num_workers=params.num_workers,
+                                pin_memory=params.cuda)
             else:
-                dl = DataLoader(SIGNSDataset(path, eval_transformer), batch_size=params.batch_size, shuffle=False,
+                dl = DataLoader(SIGNSDataset(data_dir=data_dir,
+                                             image_list_file=image_list_file,
+                                             transform=eval_transformer), 
+                                batch_size=params.batch_size, shuffle=False,
                                 num_workers=params.num_workers,
                                 pin_memory=params.cuda)
 
