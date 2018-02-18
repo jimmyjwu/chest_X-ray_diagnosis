@@ -93,7 +93,7 @@ def fetch_dataloader(types, data_dir, params):
 
     for split in ['train', 'val', 'test']:
         if split in types:
-            image_list_file = os.path.join(data_dir, "{}_list.txt".format(split))
+            image_list_file = os.path.join(os.path.join(data_dir, "labels"),"{}_list.txt".format(split))
 
             # use the train_transformer if training data, else use eval_transformer without random flip
             if split == 'train':
