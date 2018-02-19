@@ -65,13 +65,13 @@ For every new experiment, you will need to create a new directory under `experim
 
 3. __Train__ your experiment. Simply run
 ```
-python train.py --data_dir data/64x64_SIGNS --model_dir experiments/base_model
+python train.py --data_dir data/224x224_images --model_dir experiments/base_model
 ```
 It will instantiate a model and train it on the training set following the hyperparameters specified in `params.json`. It will also evaluate some metrics on the validation set.
 
 4. __Your first hyperparameters search__ We created a new directory `learning_rate` in `experiments` for you. Now, run
 ```
-python search_hyperparams.py --data_dir data/64x64_SIGNS --parent_dir experiments/learning_rate
+python search_hyperparams.py --data_dir data/224x224_images --parent_dir experiments/learning_rate
 ```
 It will train and evaluate a model with different values of learning rate defined in `search_hyperparams.py` and create a new directory for each experiment under `experiments/learning_rate/`.
 
@@ -82,7 +82,7 @@ python synthesize_results.py --parent_dir experiments/learning_rate
 
 6. __Evaluation on the test set__ Once you've run many experiments and selected your best model and hyperparameters based on the performance on the validation set, you can finally evaluate the performance of your model on the test set. Run
 ```
-python evaluate.py --data_dir data/64x64_SIGNS --model_dir experiments/base_model
+python evaluate.py --data_dir data/224x224_images --model_dir experiments/base_model
 ```
 
 
