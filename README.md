@@ -15,8 +15,9 @@ Notes:
 
 
 #### Install Dependencies
-From within this project directory, run:
+Ensure that pip and Anaconda are installed. Then run:
 ```
+conda install pytorch torchvision -c pytorch
 pip install -r requirements.txt
 ```
 
