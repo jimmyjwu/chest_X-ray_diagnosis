@@ -1,3 +1,4 @@
+
 # Thoracic Disease Identification from Chest X-Rays
 
 The goal of this project is to develop high-accuracy deep learning models for identifying 14 thoracic diseases from chest X-ray scans, as well as to localize the regions of the scans indicating disease.
@@ -35,21 +36,20 @@ data/
 ```
 
 
-__TODO: Adapt the instructions below, left over from the CS 230 starter code instructions.__
 
-Run the script `build_dataset.py` which will resize the images to size `(64, 64)`. The new resized dataset will be located by default in `data/64x64_SIGNS`:
+Run the script `build_dataset.py` which will resize the images to size `(224, 224)`. The new resized dataset will be located by default in `data/224x224_images`:
 
 ```bash
-python build_dataset.py --data_dir data/SIGNS --output_dir data/64x64_SIGNS
+python build_dataset.py --data_dir data/images --output_dir data/224x224_images
 ```
 
 
 
 ## Quickstart (~10 min)
 
-1. __Build the dataset of size 64x64__: make sure you complete this step before training
+1. __Build the dataset of size 224x224__: make sure you complete this step before training
 ```bash
-python build_dataset.py --data_dir data/SIGNS --output_dir data/64x64_SIGNS
+python build_dataset.py --data_dir data/images --output_dir data/224x224_images
 ```
 
 2. __Your first experiment__ We created a `base_model` directory for you under the `experiments` directory. It contains a file `params.json` which sets the hyperparameters for the experiment. It looks like
