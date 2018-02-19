@@ -1,48 +1,41 @@
-# Hand Signs Recognition with PyTorch
+# Thoracic Disease Identification from Chest X-Rays
 
-*Authors: Surag Nair, Olivier Moindrot and Guillaume Genthial*
+The goal of this project is to develop high-accuracy deep learning models for identifying 14 thoracic diseases from chest X-ray scans, as well as to localize the regions of the scans indicating disease.
 
-Take the time to read the [tutorials](https://cs230-stanford.github.io/project-starter-code.html).
+__TODO: Update link below with our report.__
+__Here is a [paper summarizing our methods and findings](https://google.com)__.
 
-Note: all scripts must be run in folder `pytorch/vision`.
 
-## Requirements
+---
+## How to Replicate Our Work
 
-We recommend using python3 and a virtual env. See instructions [here](https://cs230-stanford.github.io/project-starter-code.html).
+Notes:
+- Unless stated otherwise, run all scripts from the top-level folder of this project.
+- We recommend running this project from within an Amazon Web Services (AWS) Deep Learning Base AMI (Ubuntu), using a GPU-accelerated instance type such as `p2.xlarge`.
 
+
+#### Install Dependencies
+From within this project directory, run:
 ```
-virtualenv -p python3 .env
-source .env/bin/activate
 pip install -r requirements.txt
 ```
 
-When you're done working on the project, deactivate the virtual environment with `deactivate`.
 
-## Task
-
-Given an image of a hand doing a sign representing 0, 1, 2, 3, 4 or 5, predict the correct label.
-
-
-## Download the SIGNS dataset
-
-For the vision example, we will used the SIGNS dataset created for this class. The dataset is hosted on google drive, download it [here][SIGNS].
-
-This will download the SIGNS dataset (~1.1 GB) containing photos of hands signs making numbers between 0 and 5.
-Here is the structure of the data:
+#### Download the Dataset
+The NIH hosts the dataset at this [Box folder](https://nihcc.app.box.com/v/ChestXray-NIHCC/folder/36938765345). Download all the tar.gz files in `images`, and extract them to the folder `/data/images`, so that we have:
 ```
-SIGNS/
-    train_signs/
-        0_IMG_5864.jpg
+data/
+    images/
+        00000001_000.png
+        00000001_001.png
+        00000001_002.png
         ...
-    test_signs/
-        0_IMG_5942.jpg
-        ...
+        (112,120 images in total)
 ```
 
-The images are named following `{label}_IMG_{id}.jpg` where the label is in `[0, 5]`.
-The training set contains 1,080 images and the test set contains 120 images.
 
-Once the download is complete, move the dataset into `data/SIGNS`.
+__TODO: Adapt the instructions below, left over from the CS 230 starter code instructions.__
+
 Run the script `build_dataset.py` which will resize the images to size `(64, 64)`. The new resized dataset will be located by default in `data/64x64_SIGNS`:
 
 ```bash
