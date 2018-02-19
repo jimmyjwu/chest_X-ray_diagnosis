@@ -12,16 +12,14 @@ normalize = transforms.Normalize([0.485, 0.456, 0.406],
 # and http://pytorch.org/tutorials/beginner/data_loading_tutorial.html
 # define a training image loader that specifies transforms on images. See documentation for more details.
 train_transformer = transforms.Compose([
-    transforms.Resize(224),  # resize the image to 224x224 (remove if images are already 224x224)
     transforms.RandomHorizontalFlip(),  # randomly flip image horizontally
     transforms.ToTensor(),  # transform it into a torch tensor
-    normalize()])  # normalize
+    normalize])  # normalize
 
 # loader for evaluation, no horizontal flip
 eval_transformer = transforms.Compose([
-    transforms.Resize(224),  # resize the image to 224x224 (remove if images are already 224x224)
     transforms.ToTensor(),  # transform it into a torch tensor
-    normalize()])  # 
+    normalize])  # 
 
 class SIGNSDataset(Dataset):
     """
@@ -33,7 +31,7 @@ class SIGNSDataset(Dataset):
 
         Args:
             data_dir: (string) directory containing the dataset
-            image_list_file: (string) file list train and test names
+            image_list_file: (string) file list train, val and test names
             transform: (torchvision.transforms) transformation to apply on image
         """
         image_names = []
@@ -89,19 +87,18 @@ def fetch_dataloader(types, data_dir, params):
 
     for split in ['train', 'val', 'test']:
         if split in types:
-            image_file = os.path.join(data_dir, "images")
-            image_list_file = os.path.join(os.path.join(data_dir, "labels"),"{}_list.txt".format(split))
-
+            image_file = os.path.join(data_dir, "..")
+            image_list_file = os.path.join(data_dir, "../labels/{}_list.txt".format(split))
             # use the train_transformer if training data, else use eval_transformer without random flip
             if split == 'train':
-                dl = DataLoader(SIGNSDataset(data_dir=image_file,
+                dl = DataLoader(SIGNSDataset(data_dir=data_dir,
                                              image_list_file=image_list_file,
                                              transform=train_transformer),
                                 batch_size=params.batch_size, shuffle=True,
                                 num_workers=params.num_workers,
                                 pin_memory=params.cuda)
             else:
-                dl = DataLoader(SIGNSDataset(data_dir=image_file,
+                dl = DataLoader(SIGNSDataset(data_dir=data_dir,
                                              image_list_file=image_list_file,
                                              transform=eval_transformer), 
                                 batch_size=params.batch_size, shuffle=False,

@@ -16,7 +16,7 @@ import model.data_loader as data_loader
 from evaluate import evaluate
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/', help="Directory containing the dataset")
+parser.add_argument('--data_dir', default='data/224x224_images', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
 parser.add_argument('--restore_file', default=None,
                     help="Optional, name of the file in --model_dir containing weights to reload before \
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     train_dl = dataloaders['train']
     val_dl = dataloaders['val']
 
-    for i, (inp, target) in enumerate(val_dl):
+    for i, (inp, target) in enumerate(train_dl):
         print(i, ": ", inp.size())
     logging.info("- done.")
 
