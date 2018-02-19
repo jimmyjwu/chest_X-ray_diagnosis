@@ -16,6 +16,7 @@ import random
 import os
 
 from PIL import Image
+from PIL import ImageFile
 from tqdm import tqdm
 
 SIZE = 224
@@ -47,6 +48,7 @@ if __name__ == '__main__':
     else:
         print("Warning: output dir {} already exists".format(args.output_dir))
 
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
     # Save files in output directory
     for filename in tqdm(filenames):
         resize_and_save(filename, args.output_dir, size=SIZE)
