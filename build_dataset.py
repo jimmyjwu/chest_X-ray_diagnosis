@@ -1,20 +1,14 @@
 """resize images to 224x224.
 
 The SIGNS dataset comes into the following format:
-    train_signs/
-        0_IMG_58224.jpg
-        ...
-    test_signs/
-        0_IMG_5942.jpg
+    images/
+        00000805_000.png
         ...
 
 Original images have size (1024, 1024).
-Resizing to (224, 224) reduces the dataset size from 1.16 GB to 4.7 MB, and loading smaller images
+Resizing to (224, 224) reduces the dataset size, and loading smaller images
 makes training faster.
 
-We already have a test set created, so we only need to split "train_signs" into train and val sets.
-Because we don't have a lot of images and we want that the statistics on the val set be as
-representative as possible, we'll take 20% of "train_signs" as val set.
 """
 
 import argparse
@@ -36,7 +30,7 @@ def resize_and_save(filename, output_dir, size=SIZE):
     image = Image.open(filename)
     # Use bilinear interpolation instead of the default "nearest neighbor" method
     image = image.resize((size, size), Image.BILINEAR)
-    image.save(os.path.join(output_dir, filename))
+    image.save(os.path.join(output_dir, filename.split('/')[-1]))
 
 
 if __name__ == '__main__':
@@ -44,16 +38,17 @@ if __name__ == '__main__':
 
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
 
-    # Get the filenames in each directory
+    # Get the filenames in directory
     filenames = os.listdir(args.data_dir)
-    filenames = [f for f in filenames if f.endswith('.png')]
+    filenames = [os.path.join(args.data_dir, f) for f in filenames if f.endswith('.png')]
 
     if not os.path.exists(args.output_dir):
         os.mkdir(args.output_dir)
     else:
         print("Warning: output dir {} already exists".format(args.output_dir))
 
+    # Save files in output directory
     for filename in tqdm(filenames):
-        resize_and_save(filename, output_dir, size=SIZE)
+        resize_and_save(filename, args.output_dir, size=SIZE)
 
     print("Done building dataset")
