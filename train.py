@@ -16,7 +16,7 @@ import model.data_loader as data_loader
 from evaluate import evaluate
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/64x64_SIGNS', help="Directory containing the dataset")
+parser.add_argument('--data_dir', default='data/', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
 parser.add_argument('--restore_file', default=None,
                     help="Optional, name of the file in --model_dir containing weights to reload before \
@@ -170,17 +170,19 @@ if __name__ == '__main__':
     train_dl = dataloaders['train']
     val_dl = dataloaders['val']
 
+    for i, (inp, target) in enumerate(val_dl):
+        print(i, ": ", inp.size())
     logging.info("- done.")
 
-    # Define the model and optimizer
-    model = net.Net(params).cuda() if params.cuda else net.Net(params)
-    optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
+    # # Define the model and optimizer
+    # model = net.Net(params).cuda() if params.cuda else net.Net(params)
+    # optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
-    # fetch loss function and metrics
-    loss_fn = net.loss_fn
-    metrics = net.metrics
+    # # fetch loss function and metrics
+    # loss_fn = net.loss_fn
+    # metrics = net.metrics
 
-    # Train the model
-    logging.info("Starting training for {} epoch(s)".format(params.num_epochs))
-    train_and_evaluate(model, train_dl, val_dl, optimizer, loss_fn, metrics, params, args.model_dir,
-                       args.restore_file)
+    # # Train the model
+    # logging.info("Starting training for {} epoch(s)".format(params.num_epochs))
+    # train_and_evaluate(model, train_dl, val_dl, optimizer, loss_fn, metrics, params, args.model_dir,
+    #                    args.restore_file)

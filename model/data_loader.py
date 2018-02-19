@@ -1,6 +1,6 @@
 import random
 import os
-
+import torch
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
@@ -12,6 +12,7 @@ normalize = transforms.Normalize([0.485, 0.456, 0.406],
 # and http://pytorch.org/tutorials/beginner/data_loading_tutorial.html
 # define a training image loader that specifies transforms on images. See documentation for more details.
 train_transformer = transforms.Compose([
+<<<<<<< HEAD
     transforms.Resize(224),  # resize the image to 224x224 (remove if images are already 224x224)
     transforms.RandomHorizontalFlip(),  # randomly flip image horizontally
     transforms.ToTensor(),  # transform it into a torch tensor
@@ -24,6 +25,19 @@ eval_transformer = transforms.Compose([
     normalize()])  # 
 
 
+=======
+                                        transforms.Resize(256),  # downscale the size
+                                        transforms.TenCrop(224), # four corners and the central crop plus the horizon flipped
+                                        transforms.Lambda
+                                        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops]))])
+
+# loader for evaluation, no horizontal flip
+eval_transformer = transforms.Compose([
+                                        transforms.Resize(256),
+                                        transforms.TenCrop(224),
+                                        transforms.Lambda
+                                        (lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops]))])
+>>>>>>> 4e53b397accd3b3004bc22c3eac0e8da4d4a4a04
 class SIGNSDataset(Dataset):
     """
     A standard PyTorch definition of Dataset which defines the functions __len__ and __getitem__.
@@ -68,7 +82,7 @@ class SIGNSDataset(Dataset):
             image: (Tensor) transformed image
             label: (int) corresponding label of image
         """
-        image = Image.open(self.filenames[idx]).convert('RGB')  # PIL image
+        image = Image.open(self.image_names[idx]).convert('RGB')  # PIL image
         if self.transform is not None:
             image = self.transform(image)
         return image, torch.FloatTensor(self.labels[idx])
