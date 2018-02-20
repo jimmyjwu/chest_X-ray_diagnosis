@@ -170,8 +170,8 @@ if __name__ == '__main__':
     train_dl = dataloaders['train']
     val_dl = dataloaders['val']
 
-    for i, (inp, target) in enumerate(train_dl):
-        print(i, ": ", inp.size())
+    # for i, (inp, target) in enumerate(train_dl):
+    #     print(i, ": ", inp.size())
     logging.info("- done.")
 
     # # Define the model and optimizer
