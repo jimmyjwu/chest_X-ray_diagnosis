@@ -36,8 +36,8 @@ data/
 ```
 
 
-
-Run the script `build_dataset.py` which will resize the images to size `(224, 224)`. The new resized dataset will be located by default in `data/224x224_images`:
+#### Pre-Process the Dataset
+Run the script `build_dataset.py`, which resizes the images to 224x224. The resized dataset will be located by default in `data/224x224_images`.
 
 ```bash
 python build_dataset.py --data_dir data/images --output_dir data/224x224_images
