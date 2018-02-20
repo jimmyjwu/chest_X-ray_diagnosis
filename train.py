@@ -175,14 +175,14 @@ if __name__ == '__main__':
     logging.info("- done.")
 
     # # Define the model and optimizer
-    # model = net.Net(params).cuda() if params.cuda else net.Net(params)
-    # optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
+    model = net.DenseNet121(params).cuda() if params.cuda else net.DenseNet121(params)
+    optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # # fetch loss function and metrics
-    # loss_fn = net.loss_fn
-    # metrics = net.metrics
+    loss_fn = net.loss_fn
+    metrics = net.metrics
 
     # # Train the model
-    # logging.info("Starting training for {} epoch(s)".format(params.num_epochs))
-    # train_and_evaluate(model, train_dl, val_dl, optimizer, loss_fn, metrics, params, args.model_dir,
-    #                    args.restore_file)
+    logging.info("Starting training for {} epoch(s)".format(params.num_epochs))
+    train_and_evaluate(model, train_dl, val_dl, optimizer, loss_fn, metrics, params, args.model_dir,
+                       args.restore_file)
