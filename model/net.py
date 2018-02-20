@@ -7,7 +7,6 @@ import torch.nn.functional as F
 import torchvision
 from sklearn.metrics import roc_auc_score
 
-N_CLASSES = 14
 
 class DenseNet121(nn.Module):
     """
@@ -89,10 +88,8 @@ def accuracy(outputs, labels):
 
     Returns: (float) accuracy 1 x 14 in [0,1]
     """
-    AUROCs = []
-    for i in range(N_CLASSES):
-        AUROCs.append(roc_auc_score(labels[:, i], outputs[:, i]))
-    return AUROCs
+    num_examples = outputs.size()[0]
+    return np.sum(np.logical_xor(outputs, labels), axis=0)/float(num_examples)
 
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
