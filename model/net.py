@@ -48,15 +48,13 @@ class DenseNet121(nn.Module):
         This function defines how we use the components of our network to operate on an input batch.
 
         Args:
-            s: (Variable) contains a batch of images, of dimension batch_size x 3 x 64 x 64 .
+            s: (Variable) contains a batch of images, of dimension batch_size x 3 x 224 x 224 .
 
         Returns:
-            out: (Variable) dimension batch_size x 6 with the log probabilities for the labels of each image.
+            out: (Variable) dimension batch_size x 14 with the log probabilities for the labels of each image.
 
         Note: the dimensions after each step are provided
         """
-        #                                                  -> batch_size x 3 x 64 x 64
-        # we apply the convolution layers, followed by batch normalisation, maxpool and relu x 3
         s = self.densenet121(s)
         return s
 
@@ -88,6 +86,7 @@ def accuracy(outputs, labels):
 
     Returns: (float) accuracy 1 x 14 in [0,1]
     """
+    print("outputs size: ", outputs.size())
     num_examples = outputs.size()[0]
     return np.sum(np.logical_xor(outputs, labels), axis=0)/float(num_examples)
 
