@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-import math
 
 class DenseNet121(nn.Module):
     """
@@ -85,7 +84,7 @@ def accuracy(outputs, labels):
     Returns: (float) accuracy 1 x 14 in [0,1]
     """
     num_examples = outputs.shape[0]
-    outputs = 1 / (1 + math.exp(-outputs))
+    outputs = 1 / (1 + np.exp(-outputs))
     outputs = (outputs > 0.5)
     return np.sum(np.logical_not(np.logical_xor(outputs, labels), axis=0))/float(num_examples)
 
