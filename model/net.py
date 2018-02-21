@@ -35,8 +35,8 @@ class DenseNet121(nn.Module):
         super(DenseNet121, self).__init__()
         self.out_size = params.out_size
         self.densenet121 = torchvision.models.densenet121(pretrained=True)
-        for param in self.densenet121.parameters():
-            param.requires_grad = False
+        # for param in self.densenet121.parameters():
+        #     param.requires_grad = False
         num_ftrs = self.densenet121.classifier.in_features
         self.densenet121.classifier = nn.Linear(num_ftrs, self.out_size)
 
