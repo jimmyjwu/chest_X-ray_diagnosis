@@ -86,7 +86,7 @@ def accuracy(outputs, labels):
 
     Returns: (float) accuracy 1 x 14 in [0,1]
     """
-    print("outputs size: ", outputs.size())
+    print("outputs: ", outputs)
     num_examples = outputs.size()[0]
     return np.sum(np.logical_xor(outputs, labels), axis=0)/float(num_examples)
 
