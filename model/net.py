@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-from sklearn.metrics import roc_auc_score
 
 
 class DenseNet121(nn.Module):
@@ -36,11 +35,10 @@ class DenseNet121(nn.Module):
         super(DenseNet121, self).__init__()
         self.out_size = params.out_size
         self.densenet121 = torchvision.models.densenet121(pretrained=True)
+        for param in self.densenet121.parameters():
+            param.requires_grad = False
         num_ftrs = self.densenet121.classifier.in_features
-        self.densenet121.classifier = nn.Sequential(
-            nn.Linear(num_ftrs, self.out_size),
-            nn.Sigmoid()
-        )
+        self.densenet121.classifier = nn.Linear(num_ftrs, self.out_size)
 
 
     def forward(self, s):
@@ -87,7 +85,9 @@ def accuracy(outputs, labels):
     Returns: (float) accuracy 1 x 14 in [0,1]
     """
     num_examples = outputs.shape[0]
-    return np.sum(np.logical_xor(outputs, labels), axis=0)/float(num_examples)
+    outputs = nn.Sigmoid()(outputs)
+    outputs = (outputs > 0.5)
+    return np.sum(np.logical_not(np.logical_xor(outputs, labels), axis=0))/float(num_examples)
 
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
