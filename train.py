@@ -21,6 +21,7 @@ parser.add_argument('--model_dir', default='experiments/base_model', help="Direc
 parser.add_argument('--restore_file', default=None,
                     help="Optional, name of the file in --model_dir containing weights to reload before \
                     training")  # 'best' or 'train'
+parser.add_argument('--small', default=None, help="Optional, small sample data for debug")
 
 
 def train(model, optimizer, loss_fn, dataloader, metrics, params):
@@ -166,23 +167,21 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # fetch dataloaders
-    dataloaders = data_loader.fetch_dataloader(['train', 'val'], args.data_dir, params)
+    dataloaders = data_loader.fetch_dataloader(['train', 'val'], args.data_dir, params, args.small)
     train_dl = dataloaders['train']
     val_dl = dataloaders['val']
 
-    for i, (inp, target) in enumerate(val_dl):
-        print(i, ": ", inp.size())
     logging.info("- done.")
 
     # # Define the model and optimizer
-    # model = net.Net(params).cuda() if params.cuda else net.Net(params)
-    # optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
+    model = net.DenseNet121(params).cuda() if params.cuda else net.DenseNet121(params)
+    optimizer = optim.Adam(model.parameters(), lr=params.learning_rate)
 
     # # fetch loss function and metrics
-    # loss_fn = net.loss_fn
-    # metrics = net.metrics
+    loss_fn = net.loss_fn
+    metrics = net.metrics
 
     # # Train the model
-    # logging.info("Starting training for {} epoch(s)".format(params.num_epochs))
-    # train_and_evaluate(model, train_dl, val_dl, optimizer, loss_fn, metrics, params, args.model_dir,
-    #                    args.restore_file)
+    logging.info("Starting training for {} epoch(s)".format(params.num_epochs))
+    train_and_evaluate(model, train_dl, val_dl, optimizer, loss_fn, metrics, params, args.model_dir,
+                       args.restore_file)

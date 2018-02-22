@@ -81,7 +81,7 @@ class ChestXRayDataset(Dataset):
         return image, torch.FloatTensor(self.labels[idx])
 
 
-def fetch_dataloader(types, data_dir, params):
+def fetch_dataloader(types, data_dir, params, small=None):
     """
     Returns DataLoaders containing train, val, and/or test data from a given directory.
 
@@ -99,8 +99,12 @@ def fetch_dataloader(types, data_dir, params):
         if split in types:
             image_file = os.path.join(data_dir, "..")
 
-            # Obtain a list of images belonging to this split
-            image_list_file = os.path.join(data_dir, "../labels/{}_list.txt".format(split))
+            # Obtain a list of images belonging to this split            
+            if small is None:
+                labels_dir = "../labels/{}_list.txt".format(split)    
+            else:
+                labels_dir = "../labels/small_{}_list.txt".format(split)
+            image_list_file = os.path.join(data_dir, labels_dir)
             
             # Training set and val/test tests use different transforms and shuffling
             if split == 'train':
@@ -115,7 +119,7 @@ def fetch_dataloader(types, data_dir, params):
                                        transform=eval_transformer)
 
             dataloader = DataLoader(dataset=dataset, 
-                                    batch_size=params.batch_size, shuffle=False,
+                                    batch_size=params.batch_size, shuffle=shuffle,
                                     num_workers=params.num_workers,
                                     pin_memory=params.cuda)
 
