@@ -21,6 +21,7 @@ parser.add_argument('--model_dir', default='experiments/base_model', help="Direc
 parser.add_argument('--restore_file', default=None,
                     help="Optional, name of the file in --model_dir containing weights to reload before \
                     training")  # 'best' or 'train'
+parser.add_argument('--small', default=None, help="Optional, small sample data for debug")
 
 
 def train(model, optimizer, loss_fn, dataloader, metrics, params):
@@ -166,12 +167,9 @@ if __name__ == '__main__':
     logging.info("Loading the datasets...")
 
     # fetch dataloaders
-    dataloaders = data_loader.fetch_dataloader(['train', 'val'], args.data_dir, params)
+    dataloaders = data_loader.fetch_dataloader(['train', 'val'], args.data_dir, params, args.small)
     train_dl = dataloaders['train']
     val_dl = dataloaders['val']
-
-    # for i, (inp, target) in enumerate(val_dl):
-    #     print(i, ": ", inp.size())
 
     logging.info("- done.")
 
