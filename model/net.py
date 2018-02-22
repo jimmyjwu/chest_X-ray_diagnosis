@@ -60,12 +60,12 @@ class CheXNet(nn.Module):
     """
     The CheXNet model, with forward() modified to also return feature vectors.
     """
-    def __init__(self, out_size):
+    def __init__(self, params):
         super(CheXNet, self).__init__()
         self.densenet121 = torchvision.models.densenet121(pretrained=True)
         num_ftrs = self.densenet121.classifier.in_features
         self.densenet121.classifier = nn.Sequential(
-            nn.Linear(num_ftrs, out_size),
+            nn.Linear(num_ftrs, params.out_size),
             nn.Sigmoid()
         )
 
