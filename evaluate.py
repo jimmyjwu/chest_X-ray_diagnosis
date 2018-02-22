@@ -12,10 +12,11 @@ import model.net as net
 import model.data_loader as data_loader
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/64x64_SIGNS', help="Directory containing the dataset")
+parser.add_argument('--data_dir', default='data/224x224_images', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
 parser.add_argument('--restore_file', default='best', help="name of the file in --model_dir \
                      containing weights to load")
+parser.add_argument('--small', default=None, help="Optional, small sample data for debug")
 
 
 def evaluate(model, loss_fn, dataloader, metrics, params):
@@ -60,6 +61,7 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
         summ.append(summary_batch)
 
     # compute mean of all metrics in summary
+    print({metric:[x[metric] for x in summ] for metric in summ[0]})
     metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]} 
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
