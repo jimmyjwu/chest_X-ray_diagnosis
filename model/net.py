@@ -56,6 +56,38 @@ class DenseNet121(nn.Module):
         return s
 
 
+class CheXNet(nn.Module):
+    """
+    The CheXNet model, with forward() modified to also return feature vectors.
+    """
+    def __init__(self, out_size):
+        super(CheXNet, self).__init__()
+        self.densenet121 = torchvision.models.densenet121(pretrained=True)
+        num_ftrs = self.densenet121.classifier.in_features
+        self.densenet121.classifier = nn.Sequential(
+            nn.Linear(num_ftrs, out_size),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        """
+        Returns the output of the network on a given input x, as well as the feature vector for x.
+
+        Intercept the feature vector produced by DenseNet121 before running it through the classifier
+        DenseNet runs the input through a series of layers called "densenet121.features", then
+        runs the output of that through a ReLU and average pooling, before being classified. We
+        consider the output of the average pooling to be the feature vector. See the bottom of
+            https://github.com/pytorch/vision/blob/master/torchvision/models/densenet.py
+        """
+        feature_vector = self.densenet121.features(x)
+        feature_vector = F.relu(feature_vector, inplace=True)
+        feature_vector = F.avg_pool2d(feature_vector, kernel_size=7, stride=1).view(feature_vector.size(0), -1)
+        
+        output = self.densenet121.classifier(feature_vector)
+
+        return output, feature_vector
+
+
 def loss_fn(outputs, labels):
     """
     Compute the cross entropy loss given outputs and labels.
