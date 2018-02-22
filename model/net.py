@@ -56,6 +56,52 @@ class DenseNet121(nn.Module):
         return s
 
 
+class CheXNet(nn.Module):
+    """
+    The CheXNet model, with forward() modified to also return feature vectors.
+
+    Note: Unlike the DenseNet121 model above, this model includes a sigmoid in its last layer.
+    """
+    def __init__(self, params):
+        """
+        Initializes the layers of the model.
+        """
+        super(CheXNet, self).__init__()
+
+        # Obtain a standard DenseNet121 model pre-trained on ImageNet
+        self.densenet121 = torchvision.models.densenet121(pretrained=True)
+
+        # By default, the input to the final layer has size 1024
+        number_of_features = self.densenet121.classifier.in_features
+
+        # Replace the standard DenseNet121 last layer with a linear-sigmoid sequence with 14 outputs
+        self.densenet121.classifier = nn.Sequential(
+            nn.Linear(number_of_features, params.out_size),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        """
+        Runs a given input x through the network and returns:
+            - The output/prediction for x
+            - The feature vector for x, as defined in the figure below
+
+        DenseNet runs the input through the following sequence of layers:
+                 +----------+   +----+   +---------------+            +----------+
+            x -->| features |-->|ReLU|-->|average pooling|--feature-->|classifier|--output-->
+                 +----------+   +----+   +---------------+  vector    +----------+
+        See documentation:
+            https://github.com/pytorch/vision/blob/master/torchvision/models/densenet.py
+        """
+        feature_vector = self.densenet121.features(x)
+        feature_vector = F.relu(feature_vector, inplace=True)
+        feature_vector = F.avg_pool2d(feature_vector, kernel_size=7, stride=1).view(feature_vector.size(0), -1)
+        
+        output = self.densenet121.classifier(feature_vector)
+
+        return output, feature_vector
+
+
 def loss_fn(outputs, labels):
     """
     Compute the cross entropy loss given outputs and labels.
