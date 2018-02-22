@@ -121,6 +121,9 @@ if __name__ == '__main__':
     # Initialize the model, using CUDA if GPU available
     model = net.DenseNet121(parameters).cuda() if parameters.cuda else net.DenseNet121(parameters)
 
+    # TEMPORARY: Wrap model in DataParallel to match CheXNet code to enable loading their weights
+    model = torch.nn.DataParallel(model).cuda()
+
     # Reload weights from pre-trained CheXNet model file
     utils.load_checkpoint(os.path.join(arguments.features_directory, arguments.restore_file), model)
     
