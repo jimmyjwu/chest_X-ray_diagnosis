@@ -86,7 +86,7 @@ def accuracy(outputs, labels):
     num_examples = outputs.shape[0]
     outputs = 1 / (1 + np.exp(-outputs))
     outputs = (outputs > 0.5)
-    return np.sum(np.logical_not(np.logical_xor(outputs, labels), axis=0))/float(num_examples)
+    return np.sum(np.logical_not(np.logical_xor(outputs, labels)), axis=0)/float(num_examples)
 
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
