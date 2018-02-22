@@ -52,7 +52,7 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
     # Set model to evaluation mode
     model.eval()
 
-    for i, (X_batch, Y_batch) in enumerate(test_loader):
+    for i, (X_batch, Y_batch) in enumerate(data_loader):
 
         # Dimensions of the input Tensor
         batch_size, channels, height, width = X_batch.size()
