@@ -59,24 +59,38 @@ class DenseNet121(nn.Module):
 class CheXNet(nn.Module):
     """
     The CheXNet model, with forward() modified to also return feature vectors.
+
+    Note: Unlike the DenseNet121 model above, this model includes a sigmoid in its last layer.
     """
     def __init__(self, params):
+        """
+        Initializes the layers of the model.
+        """
         super(CheXNet, self).__init__()
+
+        # Obtain a standard DenseNet121 model pre-trained on ImageNet
         self.densenet121 = torchvision.models.densenet121(pretrained=True)
-        num_ftrs = self.densenet121.classifier.in_features
+
+        # By default, the input to the final layer has size 1024
+        number_of_features = self.densenet121.classifier.in_features
+
+        # Replace the standard DenseNet121 last layer with a linear-sigmoid sequence with 14 outputs
         self.densenet121.classifier = nn.Sequential(
-            nn.Linear(num_ftrs, params.out_size),
+            nn.Linear(number_of_features, params.out_size),
             nn.Sigmoid()
         )
 
     def forward(self, x):
         """
-        Returns the output of the network on a given input x, as well as the feature vector for x.
+        Runs a given input x through the network and returns:
+            - The output/prediction for x
+            - The feature vector for x, as defined in the figure below
 
-        Intercept the feature vector produced by DenseNet121 before running it through the classifier
-        DenseNet runs the input through a series of layers called "densenet121.features", then
-        runs the output of that through a ReLU and average pooling, before being classified. We
-        consider the output of the average pooling to be the feature vector. See the bottom of
+        DenseNet runs the input through the following sequence of layers:
+                 +----------+   +----+   +---------------+            +----------+
+            x -->| features |-->|ReLU|-->|average pooling|--feature-->|classifier|--output-->
+                 +----------+   +----+   +---------------+  vector    +----------+
+        See documentation:
             https://github.com/pytorch/vision/blob/master/torchvision/models/densenet.py
         """
         feature_vector = self.densenet121.features(x)

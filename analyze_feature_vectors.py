@@ -25,16 +25,16 @@ argument_parser.add_argument('--data_directory', default='data/224x224_images', 
 argument_parser.add_argument('--model_directory', default='experiments/base_model', help="Directory containing params.json")
 
 argument_parser.add_argument('--features_directory',
-                    default='feature_data',
-                    help="Directory containing feature data and files useful for feature extraction")
+                             default='feature_data',
+                             help="Directory containing feature data and files useful for feature extraction")
 
 argument_parser.add_argument('--restore_file',
-                    default='CheXNet_model.pth.tar',
-                    help="Name of the file in --features_directory containing weights to load")
+                             default='CheXNet_model.pth.tar',
+                             help="Name of the file in --features_directory containing weights to load")
 
 argument_parser.add_argument('--features_file',
-                    default='train_features_and_labels.txt',
-                    help="Name of the file in --features_directory in which features should be saved")
+                             default='train_features_and_labels.txt',
+                             help="Name of the file in --features_directory in which features should be saved")
 
 
 def extract_feature_vectors(model, data_loader, parameters, features_file):
@@ -69,14 +69,11 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
         Y_predicted, features = model(X_batch_variable)
 
         """
-        Store the feature vector for each example as a NumPy array
+        Convert the Variable (of size [64, 1024]) of features for this batch to a NumPy array of the same size
         Notes:
-            - "features[i]" is the i-th training example packed into the features Variable
             - ".data" returns the Tensor that underlies the Variable
             - ".cpu()" moves the Tensor from the GPU to the CPU
             - ".numpy()" converts a Tensor to a NumPy array
-
-        Since "features" is a [64, 1024]-size Variable, each "feature_vector" below is a 1024-length NumPy array
         """
         features_numpy = features.data.cpu().numpy()
 
@@ -119,12 +116,13 @@ if __name__ == '__main__':
     logging.info("Done loading dataset")
 
     # Initialize the model, using CUDA if GPU available
+    # TEMPORARY: Use public CheXNet model instead of our own model so that we can load their weights
     model = net.CheXNet(parameters).cuda() if parameters.cuda else net.CheXNet(parameters)
 
-    # TEMPORARY: Wrap model in DataParallel to match CheXNet code to enable loading their weights
+    # TEMPORARY: Wrap model in DataParallel to match CheXNet code so that we can load their weights
     model = torch.nn.DataParallel(model).cuda()
 
-    # Reload weights from pre-trained CheXNet model file
+    # TEMPORARY: Load weights from pre-trained CheXNet model file
     utils.load_checkpoint(os.path.join(arguments.features_directory, arguments.restore_file), model)
     
     # Extract feature vectors
