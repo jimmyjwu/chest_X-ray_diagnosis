@@ -26,7 +26,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/images', help="Directory containing the chest X-ray dataset")
 parser.add_argument('--output_dir', default='data/224x224_images', help="Where to store the processed dataset")
 
-
 def resize_and_save(filename, output_dir, size=SIZE):
     """
     Resizes the image contained in 'filename' and saves it (with the same name) in the directory 'output_dir'
@@ -54,7 +53,7 @@ if __name__ == '__main__':
         print("Warning: output dir {} already exists".format(args.output_dir))
 
     ImageFile.LOAD_TRUNCATED_IMAGES = True # Fixes an issue in which PIL errors on some images
-    
+
     # Save files in output directory
     for filename in tqdm(filenames):
         resize_and_save(filename, args.output_dir, size=SIZE)
