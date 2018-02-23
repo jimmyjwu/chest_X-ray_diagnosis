@@ -57,7 +57,7 @@ class RunningAverage():
         self.steps += 1
     
     def __call__(self):
-        return self.total/float(self.steps)
+        return float(self.total) / max(self.steps, 1) # Prevent divide-by-zero error
         
     
 def set_logger(log_path):
