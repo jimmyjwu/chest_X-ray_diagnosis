@@ -36,9 +36,8 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     model.eval()
 
     # summary for current eval loop
-    summ = []
-    outputs = []
-    labels = []
+    summ = {}
+    summ['loss'] = []
     print("compute metrics over the dataset")
     # compute metrics over the dataset
     for data_batch, labels_batch in dataloader:
@@ -55,23 +54,20 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
 
         # extract data from torch Variable, move to cpu, convert to numpy arrays
         output_batch = output_batch.data.cpu().numpy()
-        outputs.append(output_batch)
+        summ['outputs'].append(output_batch)
         labels_batch = labels_batch.data.cpu().numpy()
-        labels.append(labels_batch)
-
-        # compute all metrics on this batch
-        summary_batch = {metric: metrics[metric](output_batch, labels_batch)
-                         for metric in metrics}
-        summary_batch['loss'] = loss.data[0]
-        summ.append(summary_batch)
+        summ['labels'].append(labels_batch)
+        summ['loss'].append(loss.data[0])
 
     print("compute mean of all metrics in summary")
     # compute mean of all metrics in summary
-    metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]} 
-    class_accuracy = np.mean([x['accuracy'] for x in summ], axis=0)
+    AUROCs = metrics['accuracy'](np.concatenate(summ['outputs']), np.concatenate(summ['labels']))
+    metrics_mean['accuracy'] = np.mean(AUROCs)
+    metrics_mean['loss'] = sum(summ['loss'])/float(len(summ['loss']))
+
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
-    AUROCs = utils.compute_AUCs(np.concatenate(outputs), np.concatenate(labels))
+    
     return metrics_mean, AUROCs
 
 

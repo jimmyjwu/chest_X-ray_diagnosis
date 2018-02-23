@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
+from sklearn.metrics import roc_auc_score
 
 class DenseNet121(nn.Module):
     """
@@ -36,8 +37,12 @@ class DenseNet121(nn.Module):
         self.densenet121 = torchvision.models.densenet121(pretrained=True)
         # for param in self.densenet121.parameters():
         #     param.requires_grad = False
-        num_ftrs = self.densenet121.classifier.in_features
-        self.densenet121.classifier = nn.Linear(num_ftrs, self.out_size)
+        
+        number_of_features = self.densenet121.classifier.in_features
+        self.densenet121.classifier = nn.Sequential(
+            nn.Linear(number_of_features, params.out_size),
+            nn.Sigmoid()
+        )
 
 
     def forward(self, s):
@@ -116,9 +121,9 @@ def loss_fn(outputs, labels):
     Note: you may use a standard loss function from http://pytorch.org/docs/master/nn.html#loss-functions. This example
           demonstrates how you can easily define a custom loss function.
     """
-    weight = torch.mean(labels, 0)/outputs.size()[0]
-    return -torch.sum(torch.add(torch.mul((1-weight), torch.mul(labels, torch.log(nn.Sigmoid()(outputs)))), 
-        torch.mul(weight, torch.mul(1-labels, torch.log(nn.Sigmoid()(1-outputs))))))
+    weight = torch.mean(labels, 0)
+    return -torch.sum(torch.add(torch.mul((1-weight), torch.mul(labels, torch.log(outputs))), 
+        torch.mul(weight, torch.mul(1-labels, torch.log(1-outputs)))))
 
 
 def accuracy(outputs, labels):
@@ -129,12 +134,12 @@ def accuracy(outputs, labels):
         outputs: (np.ndarray) dimension batch_size x 14 - log softmax output of the model
         labels: (np.ndarray) dimension batch_size x 14 - label of every type of disease [0, 1] (1 represents contains such disease;)
 
-    Returns: (float) accuracy 1 x 14 in [0,1]
+    Returns: List of AUROCs of all classes.
     """
-    num_examples = outputs.shape[0]
-    outputs = 1 / (1 + np.exp(-outputs))
-    outputs = (outputs > 0.5)
-    return np.sum(np.logical_not(np.logical_xor(outputs, labels)), axis=0)/float(num_examples)
+    AUROCs = []
+    for i in range(outputs.shape[1]):
+        AUROCs.append(roc_auc_score(labels[:, i], outputs[:, i]))
+    return AUROCs
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
 metrics = {

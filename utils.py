@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 import torch
-from sklearn.metrics import roc_auc_score
+
 import numpy as np
 
 class Params():
@@ -148,25 +148,6 @@ def print_class_accuracy(class_accuracy, logging):
     for i in range(len(class_accuracy)):
         logging.info(CLASS_NAMES[i] + ': ' + str(class_accuracy[i]))
 
-def compute_AUCs(outputs, labels):
-    """Computes Area Under the Curve (AUC) from prediction scores.
-
-    Args:
-        labels: shape = [n_samples, n_classes] true binary labels.
-        outputs: shape = [n_samples, n_classes] can either be 
-          probability estimates of the positive class,
-          confidence values, or binary decisions.
-
-    Returns:
-        List of AUROCs of all classes.
-    """
-    AUROCs = []
-    print(outputs.shape)
-    outputs = 1 / (1 + np.exp(-outputs))
-    outputs = (outputs > 0.5)
-    for i in range(outputs.shape[1]):
-        AUROCs.append(roc_auc_score(labels[:, i], outputs[:, i]))
-    return AUROCs
 
 
 

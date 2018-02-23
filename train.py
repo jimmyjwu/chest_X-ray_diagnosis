@@ -42,7 +42,8 @@ def train(model, optimizer, loss_fn, dataloader, metrics, params):
     model.train()
 
     # summary for current training loop and a running average object for loss
-    summ = []
+    summ = {}
+    summ['loss'] = []
     loss_avg = utils.RunningAverage()
 
     # Use tqdm for progress bar
@@ -70,12 +71,8 @@ def train(model, optimizer, loss_fn, dataloader, metrics, params):
                 # extract data from torch Variable, move to cpu, convert to numpy arrays
                 output_batch = output_batch.data.cpu().numpy()
                 labels_batch = labels_batch.data.cpu().numpy()
-
-                # compute all metrics on this batch
-                summary_batch = {metric:metrics[metric](output_batch, labels_batch)
-                                 for metric in metrics}
-                summary_batch['loss'] = loss.data[0]
-                summ.append(summary_batch)
+                # compute all metrics on this batch                
+                summ['loss'].append(loss.data[0])
 
             # update the average loss
             loss_avg.update(loss.data[0])
@@ -84,7 +81,7 @@ def train(model, optimizer, loss_fn, dataloader, metrics, params):
             t.update()
 
     # compute mean of all metrics in summary
-    metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]}
+    metrics_mean['loss'] = sum(summ['loss'])/float(len(summ['loss']))
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Train metrics: " + metrics_string)
 
@@ -122,7 +119,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         # Evaluate for one epoch on validation set
         val_metrics, val_class_auroc = evaluate(model, loss_fn, val_dataloader, metrics, params)
 
-        val_auroc = np.mean(val_class_auroc)
+        val_auroc = val_metrics['accuracy']
         is_best = val_auroc>=best_val_auroc
 
         # Save weights
@@ -134,7 +131,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
 
         # If best_eval, best_save_path
         if is_best:
-            logging.info("- Found new best accuracy")
+            logging.info("- Found new best accuracy: " + str(best_val_auroc))
             utils.print_class_accuracy(val_class_auroc, logging)
             best_val_auroc = val_auroc
 
