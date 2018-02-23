@@ -135,7 +135,7 @@ def accuracy(outputs, labels):
     outputs = (outputs > 0.5)
     AUROCs = []
     for i in range(N_CLASSES):
-        AUROCs.append(roc_auc_score(gt_np[:, i], pred_np[:, i]))
+        AUROCs.append(roc_auc_score(outputs[:, i], labels[:, i]))
     return AUROCs
 
 
