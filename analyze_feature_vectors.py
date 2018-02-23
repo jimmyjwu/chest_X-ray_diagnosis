@@ -133,8 +133,8 @@ def analyze_feature_vector_clusters(features_file, distance=euclidean_distance, 
     for i, line in enumerate(features_file):
         features_and_labels = line.split()
 
-        # Record features for this example, casting them as floats
-        feature_vectors.append( list(map(float, features_and_labels[0:number_of_features])) )
+        # Record features for this example, casting them as floats and placing them in a NumPy array
+        feature_vectors.append( numpy.fromiter( map(float, features_and_labels[0:number_of_features]), float ) )
 
         # Record classes to which this example belongs
         for j, label in enumerate(features_and_labels[-14:]):
