@@ -105,3 +105,6 @@ ENV/
 
 # image data
 *.png
+
+# parameters
+*.pth.tar

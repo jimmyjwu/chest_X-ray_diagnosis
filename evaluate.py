@@ -16,8 +16,9 @@ parser.add_argument('--data_dir', default='data/224x224_images', help="Directory
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
 parser.add_argument('--restore_file', default='best', help="name of the file in --model_dir \
                      containing weights to load")
-parser.add_argument('--small', default=None, help="Optional, small sample data for debug")
-
+parser.add_argument('-small',
+                    action='store_true', # Sets args.small to False by default
+                    help="(Optional) Use small dataset instead of full dataset")
 
 def evaluate(model, loss_fn, dataloader, metrics, params):
     """Evaluate the model on `num_steps` batches.
