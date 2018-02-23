@@ -117,8 +117,8 @@ def loss_fn(outputs, labels):
           demonstrates how you can easily define a custom loss function.
     """
     weight = torch.mean(labels, 0)/outputs.size()[0]
-    return -torch.sum(torch.add(torch.mul(weight, torch.mul(labels, torch.log(nn.Sigmoid()(outputs)))), 
-        torch.mul(1-labels, torch.log(nn.Sigmoid()(1-outputs)))))
+    return -torch.sum(torch.add(torch.mul((1-weight), torch.mul(labels, torch.log(nn.Sigmoid()(outputs)))), 
+        torch.mul(weight, torch.mul(1-labels, torch.log(nn.Sigmoid()(1-outputs))))))
 
 
 def accuracy(outputs, labels):
