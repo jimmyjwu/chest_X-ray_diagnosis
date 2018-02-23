@@ -99,7 +99,7 @@ if __name__ == '__main__':
     logging.info("- done.")
 
     # Define the model
-    model = net.Net(params).cuda() if params.cuda else net.Net(params)
+    model = net.DenseNet121(params).cuda() if params.cuda else net.DenseNet121(params)
     
     loss_fn = net.loss_fn
     metrics = net.metrics
@@ -110,6 +110,7 @@ if __name__ == '__main__':
     utils.load_checkpoint(os.path.join(args.model_dir, args.restore_file + '.pth.tar'), model)
 
     # Evaluate
-    test_metrics = evaluate(model, loss_fn, test_dl, metrics, params)
+    test_metrics, class_accuracy = evaluate(model, loss_fn, test_dl, metrics, params)
+    utils.print_class_accuracy(class_accuracy, logging)
     save_path = os.path.join(args.model_dir, "metrics_test_{}.json".format(args.restore_file))
     utils.save_dict_to_json(test_metrics, save_path)
