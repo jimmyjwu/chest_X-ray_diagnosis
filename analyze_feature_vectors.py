@@ -7,6 +7,8 @@ This script:
 import argparse
 import logging
 import os
+import itertools
+from collections import defaultdict
 
 # Scientific and deep learning modules
 import numpy
@@ -97,6 +99,80 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
             progress_bar.update()
 
 
+def euclidean_distance(vector_1, vector_2):
+    """
+    Returns the L2/Euclidean distance between two vectors.
+    """
+    return numpy.linalg.norm(vector_1 - vector_2)
+
+
+def analyze_feature_vector_clusters(features_file, distance=euclidean_distance, number_of_features=1024):
+    """
+    Loads feature vectors and labels from a file and prints information about their clustering
+    properties. Here, we think of the space of feature vectors, and consider a vector v_i to be in
+    cluster j if j is one of the labels for example i.
+
+    TEMPORARY: This function currently only runs in a reasonable amount of time for feature files
+    of modest size. We recommend using the features file built from the small training dataset
+    (~4000 samples).
+
+    Arguments:
+        features_file: (file) a file object in which each line contains one example's features and labels
+        distance: (function) a symmetric distance function on pairs of vectors
+        number_of_features: (int) the number of feature values in each line of feature_file
+    """
+    logging.info('Loading feature vectors and building clusters')
+
+    # List of all feature vectors
+    feature_vectors = []
+
+    # Map from (integer j) --> (list of indices i such that feature_vectors[i] is in cluster j)
+    cluster_member_indices_for_cluster = defaultdict(list)
+
+    # Each line in features_file contains feature values followed by 14 0/1's indicating labels, separated by spaces
+    for i, line in enumerate(features_file):
+        features_and_labels = line.split()
+
+        # Record features for this example, casting them as floats
+        feature_vectors.append( map(float, features_and_labels[0:number_of_features]) )
+
+        # Record classes to which this example belongs
+        for j, label in enumerate(features_and_labels[-14:])
+            
+            # These numbers look like '1.0' or '0.0', so cast as float
+            if float(label) == 1: cluster_member_indices_for_cluster[j].append(i)
+
+    logging.info('Done loading feature vectors and building clusters')
+
+    logging.info('Computing global average distance')
+
+    # Compute average distance between vectors overall
+    global_average_distance = utils.RunningAverage()
+    for vector_1, vector_2 in itertools.combinations(feature_vectors, r=2): # All pairs of feature vectors
+        global_average_distance.update(distance(vector_1, vector_2))
+
+    logging.info('Done computing global average distance')
+
+    # Compute average cluster distance within each cluster, where a cluster is the set of vectors in the same class
+    average_distance_within_cluster = defaultdict(utils.RunningAverage)
+    for j, vectors in enumerate(cluster_member_indices_for_cluster):
+
+        logging.info('Computing average distance within cluster ' + str(j))
+
+        # Compute average distance within cluster j
+        for vector_1, vector_2 in itertools.combinations(feature_vectors, r=2):
+            average_distance_within_cluster[j].update(distance(vector_1, vector_2))
+
+    logging.info('Done computing average distances within clusters')
+
+    # Print global and within-cluster average distances
+    print()
+    print('Global average distance between vectors: ' + str(global_average_distance()))
+    for j, average_cluster_distance in enumerate(average_distance_within_cluster):
+        print('Average distance between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance()))
+
+
+
 if __name__ == '__main__':
 
     # Load user arguments
@@ -141,4 +217,15 @@ if __name__ == '__main__':
         extract_feature_vectors(model, train_data_loader, parameters, features_file)
     
     logging.info("Done extracting features")
+
+    logging.info("Analyzing features")
+
+    # Read feature vectors and labels and print information about them
+    with open(features_file_path, 'r') as features_file:
+        analyze_feature_vector_clusters(features_file)
+
+    logging.info("Done analyzing features")
+
+
+
 
