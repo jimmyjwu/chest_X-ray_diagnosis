@@ -56,7 +56,7 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
     model.eval()
 
     # Show progress bar while iterating over mini-batches
-    with tqdm(total=len(dataloader)) as t:
+    with tqdm(total=len(data_loader)) as progress_bar:
         for i, (X_batch, Y_batch) in enumerate(data_loader):
 
             # Dimensions of the input Tensor
@@ -94,8 +94,7 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
                 # Convert feature/label values to strings and write them out as a space-separated line
                 features_file.write(' '.join(map(str, features_and_labels)) + '\n')
 
-            # Update progress bar
-            t.update()
+            progress_bar.update()
 
 
 if __name__ == '__main__':
