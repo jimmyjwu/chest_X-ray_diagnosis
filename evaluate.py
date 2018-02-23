@@ -37,6 +37,8 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
 
     # summary for current eval loop
     summ = []
+    outputs = []
+    labels = []
     print("compute metrics over the dataset")
     # compute metrics over the dataset
     for data_batch, labels_batch in dataloader:
@@ -53,7 +55,9 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
 
         # extract data from torch Variable, move to cpu, convert to numpy arrays
         output_batch = output_batch.data.cpu().numpy()
+        outputs.append(output_batch)
         labels_batch = labels_batch.data.cpu().numpy()
+        labels.append(labels_batch)
 
         # compute all metrics on this batch
         summary_batch = {metric: metrics[metric](output_batch, labels_batch)
@@ -67,7 +71,8 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     class_accuracy = np.mean([x['accuracy'] for x in summ], axis=0)
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
-    return metrics_mean, class_accuracy
+    AUROCs = compute_AUCs(labels, outputs)
+    return metrics_mean, AUROCs
 
 
 if __name__ == '__main__':

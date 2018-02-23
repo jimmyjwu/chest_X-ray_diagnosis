@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-from sklearn.metrics import roc_auc_score
 
 class DenseNet121(nn.Module):
     """
@@ -130,14 +129,28 @@ def accuracy(outputs, labels):
 
     Returns: (float) accuracy 1 x 14 in [0,1]
     """
-    N_CLASSES = 14
-    # outputs = 1 / (1 + np.exp(-outputs))
-    # outputs = (outputs > 0.5)
+    num_examples = outputs.shape[0]
+    outputs = 1 / (1 + np.exp(-outputs))
+    outputs = (outputs > 0.5)
+    return np.sum(np.logical_not(np.logical_xor(outputs, labels)), axis=0)/float(num_examples)
+
+def compute_AUCs(outputs, labels):
+    """Computes Area Under the Curve (AUC) from prediction scores.
+
+    Args:
+        labels: Pytorch tensor on GPU, shape = [n_samples, n_classes]
+          true binary labels.
+        outputs: Pytorch tensor on GPU, shape = [n_samples, n_classes]
+          can either be probability estimates of the positive class,
+          confidence values, or binary decisions.
+
+    Returns:
+        List of AUROCs of all classes.
+    """
     AUROCs = []
     for i in range(N_CLASSES):
         AUROCs.append(roc_auc_score(labels[:, i], outputs[:, i]))
     return AUROCs
-
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
 metrics = {
