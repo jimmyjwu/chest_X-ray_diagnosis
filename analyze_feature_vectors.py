@@ -137,7 +137,7 @@ def analyze_feature_vector_clusters(features_file, distance=euclidean_distance, 
         feature_vectors.append( map(float, features_and_labels[0:number_of_features]) )
 
         # Record classes to which this example belongs
-        for j, label in enumerate(features_and_labels[-14:])
+        for j, label in enumerate(features_and_labels[-14:]):
             
             # These numbers look like '1.0' or '0.0', so cast as float
             if float(label) == 1: cluster_member_indices_for_cluster[j].append(i)
