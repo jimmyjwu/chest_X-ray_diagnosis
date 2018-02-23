@@ -145,7 +145,7 @@ def print_class_accuracy(class_accuracy, logging):
     CLASS_NAMES = [ 'Atelectasis', 'Cardiomegaly', 'Effusion', 'Infiltration', 'Mass', 'Nodule', 'Pneumonia',
                 'Pneumothorax', 'Consolidation', 'Edema', 'Emphysema', 'Fibrosis', 'Pleural_Thickening', 'Hernia']
     for i in range(len(CLASS_NAMES)):
-        print(CLASS_NAMES[i] + ': ' + str(class_accuracy[i]) + '\n')
+        print(CLASS_NAMES[i] + ': ' + str(class_accuracy[i]))
         logging.info(CLASS_NAMES[i] + ': ' + str(class_accuracy[i]) + '\n')
 
 
