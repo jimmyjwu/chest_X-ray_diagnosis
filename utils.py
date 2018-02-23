@@ -161,6 +161,8 @@ def compute_AUCs(outputs, labels):
     """
     AUROCs = []
     print(outputs.shape)
+    outputs = 1 / (1 + np.exp(-outputs))
+    outputs = (outputs > 0.5)
     for i in range(outputs.shape[1]):
         AUROCs.append(roc_auc_score(labels[:, i], outputs[:, i]))
     return AUROCs
