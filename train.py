@@ -44,6 +44,8 @@ def train(model, optimizer, loss_fn, dataloader, metrics, params):
     # summary for current training loop and a running average object for loss
     summ = {}
     summ['loss'] = []
+    summ['outputs'] = []
+    summ['labels'] = []
     loss_avg = utils.RunningAverage()
 
     # Use tqdm for progress bar

@@ -38,6 +38,8 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     # summary for current eval loop
     summ = {}
     summ['loss'] = []
+    summ['outputs'] = []
+    summ['labels'] = []
     print("compute metrics over the dataset")
     # compute metrics over the dataset
     for data_batch, labels_batch in dataloader:
