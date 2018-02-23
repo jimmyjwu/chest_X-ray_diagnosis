@@ -144,31 +144,23 @@ def analyze_feature_vector_clusters(features_file, distance=euclidean_distance, 
 
     logging.info('Done loading feature vectors and building clusters')
 
-    logging.info('Computing global average distance')
+    logging.info('Computing global and within-cluster average distances')
 
     # Compute average distance between vectors overall
     global_average_distance = utils.RunningAverage()
     for vector_1, vector_2 in itertools.combinations(feature_vectors, r=2): # All pairs of feature vectors
         global_average_distance.update(distance(vector_1, vector_2))
 
-    logging.info('Done computing global average distance')
+    print('Global average distance between vectors: ' + str(global_average_distance()))
 
     # Compute average cluster distance within each cluster, where a cluster is the set of vectors in the same class
-    average_distance_within_cluster = defaultdict(utils.RunningAverage)
     for j, vector_indices in enumerate(cluster_member_indices_for_cluster):
 
-        logging.info('Computing average distance within cluster ' + str(j))
-
         # Compute average distance within cluster j
+        average_cluster_distance = utils.RunningAverage()
         for vector_index_1, vector_index_2 in itertools.combinations(vector_indices, r=2):
-            average_distance_within_cluster[j].update( distance(feature_vectors[vector_index_1], feature_vectors[vector_index_2]) )
+            average_cluster_distance.update( distance(feature_vectors[vector_index_1], feature_vectors[vector_index_2]) )
 
-    logging.info('Done computing average distances within clusters')
-
-    # Print global and within-cluster average distances
-    print()
-    print('Global average distance between vectors: ' + str(global_average_distance()))
-    for j, average_cluster_distance in enumerate(average_distance_within_cluster):
         print('Average distance between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance()))
 
 
