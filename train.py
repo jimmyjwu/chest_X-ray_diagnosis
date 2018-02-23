@@ -120,7 +120,6 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
 
         # Evaluate for one epoch on validation set
         val_metrics, val_class_accuracy = evaluate(model, loss_fn, val_dataloader, metrics, params)
-        print(val_class_accuracy)
 
         val_acc = val_metrics['accuracy']
         is_best = val_acc>=best_val_acc
