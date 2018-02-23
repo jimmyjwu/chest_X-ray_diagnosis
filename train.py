@@ -135,6 +135,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         # If best_eval, best_save_path
         if is_best:
             logging.info("- Found new best accuracy")
+            utils.print_class_accuracy(val_class_accuracy, logging)
             best_val_acc = val_acc
 
             # Save best val metrics in a json file in the model directory

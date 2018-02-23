@@ -140,3 +140,16 @@ def load_checkpoint(checkpoint, model, optimizer=None):
         optimizer.load_state_dict(checkpoint['optim_dict'])
 
     return checkpoint
+
+def print_class_accuracy(class_accuracy, logging):
+    CLASS_NAMES = [ 'Atelectasis', 'Cardiomegaly', 'Effusion', 'Infiltration', 'Mass', 'Nodule', 'Pneumonia',
+                'Pneumothorax', 'Consolidation', 'Edema', 'Emphysema', 'Fibrosis', 'Pleural_Thickening', 'Hernia']
+    for i in range(len(CLASS_NAMES)):
+        logging.info(CLASS_NAMES[i] + ': ' + class_accuracy[i] + '\n')
+
+
+
+
+
+
+
