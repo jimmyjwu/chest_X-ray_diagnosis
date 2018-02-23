@@ -123,7 +123,7 @@ def average_distance_between_vectors(vectors, distance):
     return average_distance()
 
 
-def analyze_feature_vector_clusters(features_file, distance=L2_distance, number_of_features=1024):
+def analyze_feature_vector_clusters(features_file_path, distance=L2_distance, number_of_features=1024):
     """
     Loads feature vectors and labels from a file and prints information about their clustering
     properties. Here, we think of the space of feature vectors, and consider a vector v_i to be in
@@ -138,40 +138,42 @@ def analyze_feature_vector_clusters(features_file, distance=L2_distance, number_
         distance: (function) a symmetric distance function on pairs of vectors
         number_of_features: (int) the number of feature values in each line of feature_file
     """
-    logging.info('Loading feature vectors and building clusters')
+    with open(features_file_path, 'r') as features_file:
 
-    # List of all feature vectors
-    feature_vectors = []
+        logging.info('Loading feature vectors and building clusters')
 
-    # Map from (integer j) --> (list of indices i such that feature_vectors[i] is in cluster j)
-    cluster_member_indices_for_cluster = defaultdict(list)
+        # List of all feature vectors
+        feature_vectors = []
 
-    # Each line in features_file contains feature values followed by 14 0/1's indicating labels, separated by spaces
-    for i, line in enumerate(features_file):
-        features_and_labels = line.split()
+        # Map from (integer j) --> (list of indices i such that feature_vectors[i] is in cluster j)
+        cluster_member_indices_for_cluster = defaultdict(list)
 
-        # Record features for this example, casting them as floats and placing them in a NumPy array
-        feature_vectors.append( numpy.fromiter( map(float, features_and_labels[0:number_of_features]), float ) )
+        # Each line in features_file contains feature values followed by 14 0/1's indicating labels, separated by spaces
+        for i, line in enumerate(features_file):
+            features_and_labels = line.split()
 
-        # Record classes to which this example belongs
-        for j, label in enumerate(features_and_labels[-14:]):
-            
-            # These numbers look like '1.0' or '0.0', so cast as float
-            if float(label) == 1: cluster_member_indices_for_cluster[j].append(i)
+            # Record features for this example, casting them as floats and placing them in a NumPy array
+            feature_vectors.append( numpy.fromiter( map(float, features_and_labels[0:number_of_features]), float ) )
 
-    logging.info('Done loading feature vectors and building clusters')
+            # Record classes to which this example belongs
+            for j, label in enumerate(features_and_labels[-14:]):
+                
+                # These numbers look like '1.0' or '0.0', so cast as float
+                if float(label) == 1: cluster_member_indices_for_cluster[j].append(i)
 
-    logging.info('Computing global and within-cluster average distances')
+        logging.info('Done loading feature vectors and building clusters')
 
-    # Compute average distance between vectors overall
-    global_average_distance = average_distance_between_vectors(feature_vectors, distance)
-    print('Global average ' + distance.__name__ + ' between vectors: ' + str(global_average_distance))
+        logging.info('Computing global and within-cluster average distances')
 
-    # Compute average distance within each cluster
-    for j, vector_indices in cluster_member_indices_for_cluster.items():
-        vectors_in_cluster = [feature_vectors[index] for index in vector_indices]
-        average_cluster_distance = average_distance_between_vectors(vectors_in_cluster, distance)
-        print('Average ' + distance.__name__ + ' between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance))
+        # Compute average distance between vectors overall
+        global_average_distance = average_distance_between_vectors(feature_vectors, distance)
+        print('Global average ' + distance.__name__ + ' between vectors: ' + str(global_average_distance))
+
+        # Compute average distance within each cluster
+        for j, vector_indices in cluster_member_indices_for_cluster.items():
+            vectors_in_cluster = [feature_vectors[index] for index in vector_indices]
+            average_cluster_distance = average_distance_between_vectors(vectors_in_cluster, distance)
+            print('Average ' + distance.__name__ + ' between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance))
 
 
 
@@ -226,9 +228,8 @@ if __name__ == '__main__':
     logging.info("Analyzing features")
 
     # Read feature vectors and labels and print information about them
-    with open(features_file_path, 'r') as features_file:
-        analyze_feature_vector_clusters(features_file, distance=L2_distance)
-        analyze_feature_vector_clusters(features_file, distance=L1_distance)
+    analyze_feature_vector_clusters(features_file_path, distance=L2_distance)
+    analyze_feature_vector_clusters(features_file_path, distance=L1_distance)
 
     logging.info("Done analyzing features")
 
