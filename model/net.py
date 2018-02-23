@@ -116,8 +116,9 @@ def loss_fn(outputs, labels):
     Note: you may use a standard loss function from http://pytorch.org/docs/master/nn.html#loss-functions. This example
           demonstrates how you can easily define a custom loss function.
     """
-    weight = torch.mean(labels, 0)/torch.sum(labels)
-    return nn.MultiLabelSoftMarginLoss()(outputs, labels)
+    weight = torch.mean(labels, 0)/outputs.size()[0]
+    return -torch.sum(torch.add(torch.cmul(weight, torch.cmul(labels, nn.sigmoid()(outputs))), 
+        torch.cmul(1-labels, nn.sigmoid()(1-outputs))))
 
 
 def accuracy(outputs, labels):
