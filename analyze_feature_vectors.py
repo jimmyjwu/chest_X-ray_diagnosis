@@ -12,6 +12,7 @@ import os
 import numpy
 import torch
 from torch.autograd import Variable
+from tqdm import tqdm
 
 # Project modules
 import utils
