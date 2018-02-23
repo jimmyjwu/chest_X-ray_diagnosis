@@ -154,7 +154,7 @@ def analyze_feature_vector_clusters(features_file, distance=euclidean_distance, 
     print('Global average distance between vectors: ' + str(global_average_distance()))
 
     # Compute average cluster distance within each cluster, where a cluster is the set of vectors in the same class
-    for j, vector_indices in cluster_member_indices_for_cluster:
+    for j, vector_indices in cluster_member_indices_for_cluster.items():
 
         # Compute average distance within cluster j
         average_cluster_distance = utils.RunningAverage()
