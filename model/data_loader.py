@@ -99,11 +99,12 @@ def fetch_dataloader(types, data_dir, params, small=None):
         if split in types:
             image_file = os.path.join(data_dir, "..")
 
-            # Obtain a list of images belonging to this split            
-            if small is None:
-                labels_dir = "../labels/{}_list.txt".format(split)    
-            else:
+            # Obtain a list of images belonging to this split  
+            # If user specified '-small' flag, obtain the small version of the train/val/test list          
+            if small:
                 labels_dir = "../labels/small_{}_list.txt".format(split)
+            else:
+                labels_dir = "../labels/{}_list.txt".format(split)
             image_list_file = os.path.join(data_dir, labels_dir)
             
             # Training set and val/test tests use different transforms and shuffling

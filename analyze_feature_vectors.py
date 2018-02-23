@@ -37,9 +37,9 @@ argument_parser.add_argument('--features_file',
                              default='train_features_and_labels.txt',
                              help="Name of the file in --features_directory in which features should be saved")
 
-argument_parser.add_argument('--small',
-                    default=None,
-                    help="(Optional) Specify any non-empty string to use small dataset instead of full dataset")
+argument_parser.add_argument('-small',
+                    action='store_true', # Sets argument_parser.small to False by default
+                    help="(Optional) Use small dataset instead of full dataset")
 
 
 def extract_feature_vectors(model, data_loader, parameters, features_file):
