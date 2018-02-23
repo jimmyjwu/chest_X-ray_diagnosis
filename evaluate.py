@@ -62,6 +62,7 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     print("compute mean of all metrics in summary")
     # compute mean of all metrics in summary
     AUROCs = metrics['accuracy'](np.concatenate(summ['outputs']), np.concatenate(summ['labels']))
+    metrics_mean = {}
     metrics_mean['accuracy'] = np.mean(AUROCs)
     metrics_mean['loss'] = sum(summ['loss'])/float(len(summ['loss']))
 
