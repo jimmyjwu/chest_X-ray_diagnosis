@@ -27,19 +27,19 @@ argument_parser.add_argument('--model_directory', default='experiments/base_mode
 
 argument_parser.add_argument('--features_directory',
                              default='feature_data',
-                             help="Directory containing feature data and files useful for feature extraction")
+                             help="Directory containing files related to feature extraction")
 
 argument_parser.add_argument('--restore_file',
                              default='CheXNet_model.pth.tar',
-                             help="Name of the file in --features_directory containing weights to load")
+                             help="File in --features_directory containing weights to load")
 
 argument_parser.add_argument('--features_file',
                              default='train_features_and_labels.txt',
-                             help="Name of the file in --features_directory in which features should be saved")
+                             help="File in --features_directory to which features should be saved")
 
 argument_parser.add_argument('-small',
-                    action='store_true', # Sets arguments.small to False by default
-                    help="(Optional) Use small dataset instead of full dataset")
+                             action='store_true', # Sets arguments.small to False by default
+                             help="Use small dataset instead of full dataset")
 
 
 def extract_feature_vectors(model, data_loader, parameters, features_file):
