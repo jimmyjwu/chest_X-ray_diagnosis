@@ -8,7 +8,7 @@ import argparse
 import logging
 import os
 import itertools
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 # Scientific and deep learning modules
 import numpy
@@ -148,7 +148,7 @@ def analyze_feature_vector_clusters(features_file_path, distance=L2_distance, nu
         feature_vectors = []
 
         # Map from (integer j) --> (list of indices i such that feature_vectors[i] is in cluster j)
-        cluster_member_indices_for_cluster = defaultdict(list)
+        cluster_member_indices_for_cluster = OrderedDict((i, []) for i in range(14))
 
         # Each line in features_file contains feature values followed by 14 0/1's indicating labels, separated by spaces
         for i, line in enumerate(features_file):
