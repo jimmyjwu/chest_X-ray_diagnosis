@@ -131,11 +131,11 @@ def accuracy(outputs, labels):
     Returns: (float) accuracy 1 x 14 in [0,1]
     """
     N_CLASSES = 14
-    outputs = 1 / (1 + np.exp(-outputs))
-    outputs = (outputs > 0.5)
+    # outputs = 1 / (1 + np.exp(-outputs))
+    # outputs = (outputs > 0.5)
     AUROCs = []
     for i in range(N_CLASSES):
-        AUROCs.append(roc_auc_score(outputs[:, i], labels[:, i]))
+        AUROCs.append(roc_auc_score(labels[:, i], outputs[:, i]))
     return AUROCs
 
 
