@@ -81,6 +81,7 @@ def train(model, optimizer, loss_fn, dataloader, metrics, params):
             t.update()
 
     # compute mean of all metrics in summary
+    metrics_mean = {}
     metrics_mean['loss'] = sum(summ['loss'])/float(len(summ['loss']))
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Train metrics: " + metrics_string)
