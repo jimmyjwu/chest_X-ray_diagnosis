@@ -54,43 +54,47 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
     # Set model to evaluation mode
     model.eval()
 
-    for i, (X_batch, Y_batch) in enumerate(data_loader):
+    # Show progress bar while iterating over mini-batches
+    with tqdm(total=len(dataloader)) as t:
+        for i, (X_batch, Y_batch) in enumerate(data_loader):
 
-        # Dimensions of the input Tensor
-        batch_size, channels, height, width = X_batch.size()
+            # Dimensions of the input Tensor
+            batch_size, channels, height, width = X_batch.size()
 
-        # If GPU available, enable CUDA on data
-        if parameters.cuda:
-            X_batch = X_batch.cuda()
-            Y_batch = Y_batch.cuda()
+            # If GPU available, enable CUDA on data
+            if parameters.cuda:
+                X_batch = X_batch.cuda()
+                Y_batch = Y_batch.cuda()
 
-        # Wrap the input tensor in a Torch Variable
-        X_batch_variable = Variable(X_batch, volatile=True)
+            # Wrap the input tensor in a Torch Variable
+            X_batch_variable = Variable(X_batch, volatile=True)
 
-        # Run the model on this batch of inputs, obtaining a Variable of predicted labels and a Variable of features
-        Y_predicted, features = model(X_batch_variable)
+            # Run the model on this batch of inputs, obtaining a Variable of predicted labels and a Variable of features
+            Y_predicted, features = model(X_batch_variable)
 
-        """
-        Convert the Variable (of size [batch_size, 1024]) of features for this batch to a NumPy array of the same size
-        Notes:
-            - ".data" returns the Tensor that underlies the Variable
-            - ".cpu()" moves the Tensor from the GPU to the CPU
-            - ".numpy()" converts a Tensor to a NumPy array
-        """
-        features_numpy = features.data.cpu().numpy()
+            """
+            Convert the Variable (of size [batch_size, 1024]) of features for this batch to a NumPy array of the same size
+            Notes:
+                - ".data" returns the Tensor that underlies the Variable
+                - ".cpu()" moves the Tensor from the GPU to the CPU
+                - ".numpy()" converts a Tensor to a NumPy array
+            """
+            features_numpy = features.data.cpu().numpy()
 
-        # Move the labels Tensor (of size [batch_size, 14]) to CPU and convert it to a NumPy array
-        Y_numpy = Y_batch.cpu().numpy()
+            # Move the labels Tensor (of size [batch_size, 14]) to CPU and convert it to a NumPy array
+            Y_numpy = Y_batch.cpu().numpy()
 
-        # For each example in the batch, write its features and labels to a file
-        for i in range(batch_size):
+            # For each example in the batch, write its features and labels to a file
+            for i in range(batch_size):
 
-            # Concatenate the i-th example's features and labels
-            features_and_labels = numpy.concatenate((features_numpy[i,:], Y_numpy[i,:]))
+                # Concatenate the i-th example's features and labels
+                features_and_labels = numpy.concatenate((features_numpy[i,:], Y_numpy[i,:]))
 
-            # Convert feature/label values to strings and write them out as a space-separated line
-            features_file.write(' '.join(map(str, features_and_labels)) + '\n')
+                # Convert feature/label values to strings and write them out as a space-separated line
+                features_file.write(' '.join(map(str, features_and_labels)) + '\n')
 
+            # Update progress bar
+            t.update()
 
 
 if __name__ == '__main__':
