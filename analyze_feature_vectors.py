@@ -99,14 +99,31 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
             progress_bar.update()
 
 
-def euclidean_distance(vector_1, vector_2):
+def L2_distance(vector_1, vector_2):
     """
     Returns the L2/Euclidean distance between two vectors.
     """
     return numpy.linalg.norm(vector_1 - vector_2)
 
 
-def analyze_feature_vector_clusters(features_file, distance=euclidean_distance, number_of_features=1024):
+def L1_distance(vector_1, vector_2):
+    """
+    Returns the L1 distance between two vectors.
+    """
+    return numpy.linalg.norm(vector_1 - vector_2, ord=1)
+
+
+def average_distance_between_vectors(vectors, distance):
+    """
+    Returns the average distance between pairs of vectors in a given list of vectors.
+    """
+    average_distance = utils.RunningAverage()
+    for vector_1, vector_2 in itertools.combinations(vectors, r=2): # All pairs of vectors
+        average_distance.update(distance(vector_1, vector_2))
+    return average_distance()
+
+
+def analyze_feature_vector_clusters(features_file, distance=L2_distance, number_of_features=1024):
     """
     Loads feature vectors and labels from a file and prints information about their clustering
     properties. Here, we think of the space of feature vectors, and consider a vector v_i to be in
@@ -147,21 +164,14 @@ def analyze_feature_vector_clusters(features_file, distance=euclidean_distance, 
     logging.info('Computing global and within-cluster average distances')
 
     # Compute average distance between vectors overall
-    global_average_distance = utils.RunningAverage()
-    for vector_1, vector_2 in itertools.combinations(feature_vectors, r=2): # All pairs of feature vectors
-        global_average_distance.update(distance(vector_1, vector_2))
+    global_average_distance = average_distance_between_vectors(feature_vectors, distance)
+    print('Global average ' + distance.__name__ + ' between vectors: ' + str(global_average_distance))
 
-    print('Global average distance between vectors: ' + str(global_average_distance()))
-
-    # Compute average cluster distance within each cluster, where a cluster is the set of vectors in the same class
+    # Compute average distance within each cluster
     for j, vector_indices in cluster_member_indices_for_cluster.items():
-
-        # Compute average distance within cluster j
-        average_cluster_distance = utils.RunningAverage()
-        for vector_index_1, vector_index_2 in itertools.combinations(vector_indices, r=2):
-            average_cluster_distance.update( distance(feature_vectors[vector_index_1], feature_vectors[vector_index_2]) )
-
-        print('Average distance between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance()))
+        vectors_in_cluster = [feature_vectors[index] for index in vector_indices]
+        average_cluster_distance = average_distance_between_vectors(vectors_in_cluster, distance)
+        print('Average ' + distance.__name__ + ' between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance))
 
 
 
@@ -217,7 +227,8 @@ if __name__ == '__main__':
 
     # Read feature vectors and labels and print information about them
     with open(features_file_path, 'r') as features_file:
-        analyze_feature_vector_clusters(features_file)
+        analyze_feature_vector_clusters(features_file, distance=L2_distance)
+        analyze_feature_vector_clusters(features_file, distance=L1_distance)
 
     logging.info("Done analyzing features")
 
