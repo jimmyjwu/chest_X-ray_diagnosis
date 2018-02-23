@@ -38,7 +38,7 @@ argument_parser.add_argument('--features_file',
                              help="Name of the file in --features_directory in which features should be saved")
 
 argument_parser.add_argument('-small',
-                    action='store_true', # Sets argument_parser.small to False by default
+                    action='store_true', # Sets arguments.small to False by default
                     help="(Optional) Use small dataset instead of full dataset")
 
 

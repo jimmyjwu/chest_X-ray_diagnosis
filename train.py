@@ -21,8 +21,9 @@ parser.add_argument('--model_dir', default='experiments/base_model', help="Direc
 parser.add_argument('--restore_file', default=None,
                     help="Optional, name of the file in --model_dir containing weights to reload before \
                     training")  # 'best' or 'train'
-parser.add_argument('--small', default=None, help="Optional, small sample data for debug")
-
+parser.add_argument('-small',
+                    action='store_true', # Sets args.small to False by default
+                    help="(Optional) Use small dataset instead of full dataset")
 
 def train(model, optimizer, loss_fn, dataloader, metrics, params):
     """Train the model on `num_steps` batches
