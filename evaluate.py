@@ -66,7 +66,7 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     class_accuracy = np.mean([x['accuracy'] for x in summ], axis=0)
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
-    return metrics_mean, metrics_class_mean
+    return metrics_mean, class_accuracy
 
 
 if __name__ == '__main__':
