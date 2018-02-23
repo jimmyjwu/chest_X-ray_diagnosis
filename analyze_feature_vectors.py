@@ -130,10 +130,15 @@ if __name__ == '__main__':
     # TEMPORARY: Load weights from pre-trained CheXNet model file
     utils.load_checkpoint(os.path.join(arguments.features_directory, arguments.restore_file), model)
     
-    # Extract feature vectors and write out to user-specified file
     logging.info("Extracting features")
-    features_file_path = os.path.join(arguments.features_directory, arguments.features_file)
+
+    # Features file should be under features_directory; prepend 'small_' if user specifies '--small'
+    features_file_name = ('small_' if arguments.small else '') + arguments.features_file
+    features_file_path = os.path.join(arguments.features_directory, features_file_name)
+    
+    # Extract feature vectors and write out to user-specified file
     with open(features_file_path, 'w') as features_file:
         extract_feature_vectors(model, train_data_loader, parameters, features_file)
+    
     logging.info("Done extracting features")
 
