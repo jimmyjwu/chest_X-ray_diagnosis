@@ -134,7 +134,8 @@ if __name__ == '__main__':
     
     # Extract feature vectors and write out to user-specified file
     logging.info("Extracting features")
-    with open(arguments.features_file, 'w') as features_file:
+    features_file_path = os.path.join(arguments.features_directory, arguments.features_file)
+    with open(features_file_path, 'w') as features_file:
         extract_feature_vectors(model, train_data_loader, parameters, features_file)
     logging.info("Done extracting features")
 
