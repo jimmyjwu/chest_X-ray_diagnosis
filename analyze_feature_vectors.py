@@ -89,13 +89,7 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
             features_and_labels = numpy.concatenate((features_numpy[i,:], Y_numpy[i,:]))
 
             # Convert feature/label values to strings and write them out as a space-separated line
-            features_file.write(' '.join(map(str, features_and_labels)))
-
-            # TEMPORARY: Break after first example
-            break
-
-        # TEMPORARY: Break after first batch
-        break
+            features_file.write(' '.join(map(str, features_and_labels)) + '\n')
 
 
 
