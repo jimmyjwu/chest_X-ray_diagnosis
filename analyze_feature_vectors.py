@@ -134,7 +134,7 @@ def analyze_feature_vector_clusters(features_file, distance=euclidean_distance, 
         features_and_labels = line.split()
 
         # Record features for this example, casting them as floats
-        feature_vectors.append( map(float, features_and_labels[0:number_of_features]) )
+        feature_vectors.append( list(map(float, features_and_labels[0:number_of_features])) )
 
         # Record classes to which this example belongs
         for j, label in enumerate(features_and_labels[-14:]):
@@ -212,10 +212,13 @@ if __name__ == '__main__':
     features_file_name = ('small_' if arguments.small else '') + arguments.features_file
     features_file_path = os.path.join(arguments.features_directory, features_file_name)
     
+    """
+    TEMPORARY: Lines below commented out since AWS instance already has features file built
     # Extract feature vectors and write out to user-specified file
     with open(features_file_path, 'w') as features_file:
         extract_feature_vectors(model, train_data_loader, parameters, features_file)
-    
+    """
+
     logging.info("Done extracting features")
 
     logging.info("Analyzing features")
