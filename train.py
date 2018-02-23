@@ -110,7 +110,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         logging.info("Restoring parameters from {}".format(restore_path))
         utils.load_checkpoint(restore_path, model, optimizer)
 
-    best_val_acc = 0.0
+    best_val_auroc = 0.0
 
     for epoch in range(params.num_epochs):
         # Run one epoch
@@ -120,10 +120,10 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         train(model, optimizer, loss_fn, train_dataloader, metrics, params)
 
         # Evaluate for one epoch on validation set
-        val_metrics, val_class_accuracy = evaluate(model, loss_fn, val_dataloader, metrics, params)
+        val_metrics, val_class_auroc = evaluate(model, loss_fn, val_dataloader, metrics, params)
 
-        val_acc = val_metrics['accuracy']
-        is_best = val_acc>=best_val_acc
+        val_auroc = np.mean(val_class_auroc)
+        is_best = val_auroc>=best_val_auroc
 
         # Save weights
         utils.save_checkpoint({'epoch': epoch + 1,
@@ -135,8 +135,8 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         # If best_eval, best_save_path
         if is_best:
             logging.info("- Found new best accuracy")
-            utils.print_class_accuracy(val_class_accuracy, logging)
-            best_val_acc = val_acc
+            utils.print_class_accuracy(val_class_auroc, logging)
+            best_val_auroc = val_auroc
 
             # Save best val metrics in a json file in the model directory
             best_json_path = os.path.join(model_dir, "metrics_val_best_weights.json")
