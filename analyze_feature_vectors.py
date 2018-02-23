@@ -44,7 +44,7 @@ argument_parser.add_argument('-small',
                              help="Use small dataset instead of full dataset")
 
 
-def extract_feature_vectors(model, data_loader, parameters, features_file):
+def extract_feature_vectors(model, data_loader, parameters, features_file_path):
     """
     Extracts feature vectors from the training set and stores them, along with labels, in a file.
 
@@ -52,51 +52,53 @@ def extract_feature_vectors(model, data_loader, parameters, features_file):
         model: (torch.nn.Module) a neural network
         data_loader: (DataLoader) a torch.utils.data.DataLoader object that fetches data
         parameters: (Params) hyperparameters object
-        features_file: (file) a Python file object to which the features and labels should be written
+        features_file_path: (string) name of the Python file to which the features and labels should be written
     """
-    # Set model to evaluation mode
-    model.eval()
+    with open(features_file_path, 'w') as features_file:
 
-    # Show progress bar while iterating over mini-batches
-    with tqdm(total=len(data_loader)) as progress_bar:
-        for i, (X_batch, Y_batch) in enumerate(data_loader):
+        # Set model to evaluation mode
+        model.eval()
 
-            # Dimensions of the input Tensor
-            batch_size, channels, height, width = X_batch.size()
+        # Show progress bar while iterating over mini-batches
+        with tqdm(total=len(data_loader)) as progress_bar:
+            for i, (X_batch, Y_batch) in enumerate(data_loader):
 
-            # If GPU available, enable CUDA on data
-            if parameters.cuda:
-                X_batch = X_batch.cuda()
-                Y_batch = Y_batch.cuda()
+                # Dimensions of the input Tensor
+                batch_size, channels, height, width = X_batch.size()
 
-            # Wrap the input tensor in a Torch Variable
-            X_batch_variable = Variable(X_batch, volatile=True)
+                # If GPU available, enable CUDA on data
+                if parameters.cuda:
+                    X_batch = X_batch.cuda()
+                    Y_batch = Y_batch.cuda()
 
-            # Run the model on this batch of inputs, obtaining a Variable of predicted labels and a Variable of features
-            Y_predicted, features = model(X_batch_variable)
+                # Wrap the input tensor in a Torch Variable
+                X_batch_variable = Variable(X_batch, volatile=True)
 
-            """
-            Convert the Variable (of size [batch_size, 1024]) of features for this batch to a NumPy array of the same size
-            Notes:
-                - ".data" returns the Tensor that underlies the Variable
-                - ".cpu()" moves the Tensor from the GPU to the CPU
-                - ".numpy()" converts a Tensor to a NumPy array
-            """
-            features_numpy = features.data.cpu().numpy()
+                # Run the model on this batch of inputs, obtaining a Variable of predicted labels and a Variable of features
+                Y_predicted, features = model(X_batch_variable)
 
-            # Move the labels Tensor (of size [batch_size, 14]) to CPU and convert it to a NumPy array
-            Y_numpy = Y_batch.cpu().numpy()
+                """
+                Convert the Variable (of size [batch_size, 1024]) of features for this batch to a NumPy array of the same size
+                Notes:
+                    - ".data" returns the Tensor that underlies the Variable
+                    - ".cpu()" moves the Tensor from the GPU to the CPU
+                    - ".numpy()" converts a Tensor to a NumPy array
+                """
+                features_numpy = features.data.cpu().numpy()
 
-            # For each example in the batch, write its features and labels to a file
-            for i in range(batch_size):
+                # Move the labels Tensor (of size [batch_size, 14]) to CPU and convert it to a NumPy array
+                Y_numpy = Y_batch.cpu().numpy()
 
-                # Concatenate the i-th example's features and labels
-                features_and_labels = numpy.concatenate((features_numpy[i,:], Y_numpy[i,:]))
+                # For each example in the batch, write its features and labels to a file
+                for i in range(batch_size):
 
-                # Convert feature/label values to strings and write them out as a space-separated line
-                features_file.write(' '.join(map(str, features_and_labels)) + '\n')
+                    # Concatenate the i-th example's features and labels
+                    features_and_labels = numpy.concatenate((features_numpy[i,:], Y_numpy[i,:]))
 
-            progress_bar.update()
+                    # Convert feature/label values to strings and write them out as a space-separated line
+                    features_file.write(' '.join(map(str, features_and_labels)) + '\n')
+
+                progress_bar.update()
 
 
 def L2_distance(vector_1, vector_2):
@@ -134,7 +136,7 @@ def analyze_feature_vector_clusters(features_file_path, distance=L2_distance, nu
     (~4000 samples).
 
     Arguments:
-        features_file: (file) a file object in which each line contains one example's features and labels
+        features_file_path: (string) name of a file in which each line contains one example's features and labels
         distance: (function) a symmetric distance function on pairs of vectors
         number_of_features: (int) the number of feature values in each line of feature_file
     """
@@ -209,21 +211,18 @@ if __name__ == '__main__':
 
     # TEMPORARY: Load weights from pre-trained CheXNet model file
     utils.load_checkpoint(os.path.join(arguments.features_directory, arguments.restore_file), model)
-    
-    logging.info("Extracting features")
 
     # Features file should be under features_directory; prepend 'small_' if user specifies '--small'
     features_file_name = ('small_' if arguments.small else '') + arguments.features_file
     features_file_path = os.path.join(arguments.features_directory, features_file_name)
     
-    """
-    TEMPORARY: Lines below commented out since AWS instance already has features file built
-    # Extract feature vectors and write out to user-specified file
-    with open(features_file_path, 'w') as features_file:
-        extract_feature_vectors(model, train_data_loader, parameters, features_file)
-    """
-
-    logging.info("Done extracting features")
+    # Extract feature vectors and write out to user-specified file (if such file does not yet exist)
+    if os.path.isfile(features_file_path):
+        logging.info("Features file detected; skipping feature extraction")
+    else:
+        logging.info("Features file not detected; now extracting features")
+        extract_feature_vectors(model, train_data_loader, parameters, features_file_path)
+        logging.info("Done extracting features")
 
     logging.info("Analyzing features")
 
