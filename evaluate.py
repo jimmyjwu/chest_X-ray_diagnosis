@@ -30,13 +30,13 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
         params: (Params) hyperparameters
         num_steps: (int) number of batches to train on, each of size params.batch_size
     """
-
+    print("set model to evaluation mode")
     # set model to evaluation mode
     model.eval()
 
     # summary for current eval loop
     summ = []
-
+    print("compute metrics over the dataset")
     # compute metrics over the dataset
     for data_batch, labels_batch in dataloader:
 
@@ -60,9 +60,10 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
         summary_batch['loss'] = loss.data[0]
         summ.append(summary_batch)
 
+    print("compute mean of all metrics in summary")
     # compute mean of all metrics in summary
-    print({metric:[x[metric] for x in summ] for metric in summ[0]})
-    metrics_mean = {metric:np.mean([x[metric] for x in summ]) for metric in summ[0]} 
+    metrics_mean = {metric:np.mean([x[metric] for x in summ], axis=0) for metric in summ[0]} 
+    print(metrics_mean)
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
     return metrics_mean
