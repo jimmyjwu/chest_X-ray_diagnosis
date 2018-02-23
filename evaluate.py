@@ -99,7 +99,7 @@ if __name__ == '__main__':
     logging.info("Creating the dataset...")
 
     # fetch dataloaders
-    dataloaders = data_loader.fetch_dataloader(['test'], args.data_dir, params)
+    dataloaders = data_loader.fetch_dataloader(['test'], args.data_dir, params, args.small)
     test_dl = dataloaders['test']
 
     logging.info("- done.")
