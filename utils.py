@@ -2,8 +2,8 @@ import json
 import logging
 import os
 import shutil
-
 import torch
+from sklearn.metrics import roc_auc_score
 
 class Params():
     """Class that loads hyperparameters from a json file.
