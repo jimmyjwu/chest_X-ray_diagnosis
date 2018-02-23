@@ -12,6 +12,7 @@ import os
 import numpy
 import torch
 from torch.autograd import Variable
+from tqdm import tqdm
 
 # Project modules
 import utils
@@ -36,60 +37,64 @@ argument_parser.add_argument('--features_file',
                              default='train_features_and_labels.txt',
                              help="Name of the file in --features_directory in which features should be saved")
 
+argument_parser.add_argument('-small',
+                    action='store_true', # Sets arguments.small to False by default
+                    help="(Optional) Use small dataset instead of full dataset")
+
 
 def extract_feature_vectors(model, data_loader, parameters, features_file):
     """
-    Extracts feature vectors from the training set and stores them in a file.
+    Extracts feature vectors from the training set and stores them, along with labels, in a file.
 
     Arguments:
         model: (torch.nn.Module) a neural network
         data_loader: (DataLoader) a torch.utils.data.DataLoader object that fetches data
         parameters: (Params) hyperparameters object
+        features_file: (file) a Python file object to which the features and labels should be written
     """
-    # A list that will eventually contain a NumPy feature vector for each example
-    feature_vectors = []
-
     # Set model to evaluation mode
     model.eval()
 
-    for i, (X_batch, Y_batch) in enumerate(data_loader):
+    # Show progress bar while iterating over mini-batches
+    with tqdm(total=len(data_loader)) as progress_bar:
+        for i, (X_batch, Y_batch) in enumerate(data_loader):
 
-        # Dimensions of the input Tensor
-        batch_size, channels, height, width = X_batch.size()
+            # Dimensions of the input Tensor
+            batch_size, channels, height, width = X_batch.size()
 
-        # If GPU available, enable CUDA on data
-        if parameters.cuda:
-            X_batch = X_batch.cuda()
-            Y_batch = Y_batch.cuda()
+            # If GPU available, enable CUDA on data
+            if parameters.cuda:
+                X_batch = X_batch.cuda()
+                Y_batch = Y_batch.cuda()
 
-        # Wrap the input tensor in a Torch Variable
-        X_batch_variable = Variable(X_batch, volatile=True)
+            # Wrap the input tensor in a Torch Variable
+            X_batch_variable = Variable(X_batch, volatile=True)
 
-        # Run the model on this batch of inputs, obtaining a Variable of predicted labels and a Variable of features
-        Y_predicted, features = model(X_batch_variable)
+            # Run the model on this batch of inputs, obtaining a Variable of predicted labels and a Variable of features
+            Y_predicted, features = model(X_batch_variable)
 
-        """
-        Convert the Variable (of size [64, 1024]) of features for this batch to a NumPy array of the same size
-        Notes:
-            - ".data" returns the Tensor that underlies the Variable
-            - ".cpu()" moves the Tensor from the GPU to the CPU
-            - ".numpy()" converts a Tensor to a NumPy array
-        """
-        features_numpy = features.data.cpu().numpy()
+            """
+            Convert the Variable (of size [batch_size, 1024]) of features for this batch to a NumPy array of the same size
+            Notes:
+                - ".data" returns the Tensor that underlies the Variable
+                - ".cpu()" moves the Tensor from the GPU to the CPU
+                - ".numpy()" converts a Tensor to a NumPy array
+            """
+            features_numpy = features.data.cpu().numpy()
 
-        # For each example in the batch (i.e. each index in the first dimension of features_numpy),
-        # write its feature vector and labels to a file
-        for feature_vector in features_numpy:
+            # Move the labels Tensor (of size [batch_size, 14]) to CPU and convert it to a NumPy array
+            Y_numpy = Y_batch.cpu().numpy()
 
-            # TEMPORARY: Instead of writing to file, print to console
-            print(feature_vector)
+            # For each example in the batch, write its features and labels to a file
+            for i in range(batch_size):
 
-            # TEMPORARY: Break after first example
-            break
+                # Concatenate the i-th example's features and labels
+                features_and_labels = numpy.concatenate((features_numpy[i,:], Y_numpy[i,:]))
 
-        # TEMPORARY: Break after first batch
-        break
+                # Convert feature/label values to strings and write them out as a space-separated line
+                features_file.write(' '.join(map(str, features_and_labels)) + '\n')
 
+            progress_bar.update()
 
 
 if __name__ == '__main__':
@@ -112,7 +117,7 @@ if __name__ == '__main__':
 
     # Create data loader for training data
     logging.info("Loading dataset")
-    train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters)['train']
+    train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters, arguments.small)['train']
     logging.info("Done loading dataset")
 
     # Initialize the model, using CUDA if GPU available
@@ -125,8 +130,15 @@ if __name__ == '__main__':
     # TEMPORARY: Load weights from pre-trained CheXNet model file
     utils.load_checkpoint(os.path.join(arguments.features_directory, arguments.restore_file), model)
     
-    # Extract feature vectors
     logging.info("Extracting features")
-    extract_feature_vectors(model, train_data_loader, parameters, arguments.features_file)
+
+    # Features file should be under features_directory; prepend 'small_' if user specifies '--small'
+    features_file_name = ('small_' if arguments.small else '') + arguments.features_file
+    features_file_path = os.path.join(arguments.features_directory, features_file_name)
+    
+    # Extract feature vectors and write out to user-specified file
+    with open(features_file_path, 'w') as features_file:
+        extract_feature_vectors(model, train_data_loader, parameters, features_file)
+    
     logging.info("Done extracting features")
 
