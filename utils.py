@@ -160,7 +160,7 @@ def compute_AUCs(outputs, labels):
         List of AUROCs of all classes.
     """
     AUROCs = []
-    for i in range(N_CLASSES):
+    for i in range(outputs.shape[1]):
         AUROCs.append(roc_auc_score(labels[:, i], outputs[:, i]))
     return AUROCs
 
