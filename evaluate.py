@@ -71,7 +71,7 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     class_accuracy = np.mean([x['accuracy'] for x in summ], axis=0)
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
-    AUROCs = utils.compute_AUCs(np.concatenate(labels), np.concatenate(outputs))
+    AUROCs = utils.compute_AUCs(np.concatenate(outputs), np.concatenate(labels))
     return metrics_mean, AUROCs
 
 
