@@ -116,6 +116,7 @@ def loss_fn(outputs, labels):
     Note: you may use a standard loss function from http://pytorch.org/docs/master/nn.html#loss-functions. This example
           demonstrates how you can easily define a custom loss function.
     """
+    weight = torch.mean(labels, 0)/torch.sum(labels)
     return nn.MultiLabelSoftMarginLoss()(outputs, labels)
 
 
@@ -133,24 +134,6 @@ def accuracy(outputs, labels):
     outputs = 1 / (1 + np.exp(-outputs))
     outputs = (outputs > 0.5)
     return np.sum(np.logical_not(np.logical_xor(outputs, labels)), axis=0)/float(num_examples)
-
-def compute_AUCs(outputs, labels):
-    """Computes Area Under the Curve (AUC) from prediction scores.
-
-    Args:
-        labels: Pytorch tensor on GPU, shape = [n_samples, n_classes]
-          true binary labels.
-        outputs: Pytorch tensor on GPU, shape = [n_samples, n_classes]
-          can either be probability estimates of the positive class,
-          confidence values, or binary decisions.
-
-    Returns:
-        List of AUROCs of all classes.
-    """
-    AUROCs = []
-    for i in range(N_CLASSES):
-        AUROCs.append(roc_auc_score(labels[:, i], outputs[:, i]))
-    return AUROCs
 
 # maintain all metrics required in this dictionary- these are used in the training and evaluation loops
 metrics = {
