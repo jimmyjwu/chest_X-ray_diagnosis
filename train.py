@@ -1,29 +1,36 @@
-"""Train the model"""
-
+"""
+This script trains the models.
+"""
+# Python modules
 import argparse
 import logging
 import os
 
+# Scientific and deep learning modules
 import numpy as np
 import torch
 import torch.optim as optim
 from torch.autograd import Variable
 from tqdm import tqdm
 
+# Project modules
 import utils
 import model.net as net
 import model.data_loader as data_loader
 from evaluate import evaluate
 
+
+# Configure user arguments for this script
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/224x224_images', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
-parser.add_argument('--restore_file', default=None,
-                    help="Optional, name of the file in --model_dir containing weights to reload before \
-                    training")  # 'best' or 'train'
+parser.add_argument('--restore_file',
+                    default=None,
+                    help="(Optional) File in --model_dir containing weights to load") # 'best' or 'train'
 parser.add_argument('-small',
                     action='store_true', # Sets args.small to False by default
-                    help="(Optional) Use small dataset instead of full dataset")
+                    help="Use small dataset instead of full dataset")
+
 
 def train(model, optimizer, loss_fn, dataloader, metrics, params):
     """Train the model on `num_steps` batches
