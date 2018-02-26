@@ -128,7 +128,7 @@ def analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distan
     """
     with open(features_file_path, 'r') as features_file:
 
-        logging.info('Loading feature vectors and building clusters')
+        logging.info('Loading feature vectors and building clusters...')
 
         # List of all feature vectors
         feature_vectors = []
@@ -149,19 +149,19 @@ def analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distan
                 # These numbers look like '1.0' or '0.0', so cast as float
                 if float(label) == 1: cluster_member_indices_for_cluster[j].append(i)
 
-        logging.info('Done loading feature vectors and building clusters')
+        logging.info('...done.')
 
         logging.info('Computing global and within-cluster average distances')
 
         # Compute average distance between vectors overall
         global_average_distance = average_distance_between_vectors(feature_vectors, distance)
-        print('Global average ' + distance.__name__ + ' between vectors: ' + str(global_average_distance))
+        logging.info('Global average ' + distance.__name__ + ' between vectors: ' + str(global_average_distance))
 
         # Compute average distance within each cluster
         for j, vector_indices in cluster_member_indices_for_cluster.items():
             vectors_in_cluster = [feature_vectors[index] for index in vector_indices]
             average_cluster_distance = average_distance_between_vectors(vectors_in_cluster, distance)
-            print('Average ' + distance.__name__ + ' between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance))
+            logging.info('Average ' + distance.__name__ + ' between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance))
 
 
 
@@ -184,9 +184,9 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.features_directory, 'analyze_feature_vectors.log'))
 
     # Create data loader for training data
-    logging.info("Loading dataset")
+    logging.info("Loading dataset...")
     train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters, arguments.small)['train']
-    logging.info("Done loading dataset")
+    logging.info("...done.")
 
     # Initialize the model, using CUDA if GPU available
     # TEMPORARY: Use public CheXNet model instead of our own model so that we can load their weights
@@ -206,15 +206,15 @@ if __name__ == '__main__':
     if os.path.isfile(features_file_path):
         logging.info("Features file detected; skipping feature extraction")
     else:
-        logging.info("Features file not detected; now extracting features")
+        logging.info("Features file not detected; now extracting features...")
         extract_feature_vectors(model, train_data_loader, parameters, features_file_path)
-        logging.info("Done extracting features")
+        logging.info("...done.")
 
     # Read feature vectors and labels and print information about them
-    logging.info("Analyzing features")
+    logging.info("Analyzing features...")
     analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distance)
     analyze_feature_vector_clusters(features_file_path, distance=utils.L1_distance)
-    logging.info("Done analyzing features")
+    logging.info("...done.")
 
 
 

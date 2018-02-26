@@ -175,11 +175,11 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(args.model_dir, 'train.log'))
 
     # Create data loaders for training and validation data
-    logging.info("Loading the datasets...")
+    logging.info("Loading the train and validation datasets...")
     data_loaders = data_loader.fetch_dataloader(['train', 'val'], args.data_dir, params, args.small)
     train_data_loader = data_loaders['train']
     validation_data_loader = data_loaders['val']
-    logging.info("- done.")
+    logging.info("...done.")
 
     # Configure model and optimizer
     model = net.DenseNet121(params).cuda() if params.cuda else net.DenseNet121(params)

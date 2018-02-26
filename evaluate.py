@@ -71,7 +71,6 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
         summ['loss'].append(loss.data[0])
 
     # Compute mean of all metrics in summary
-    print("Computing mean of all metrics in summary")
     AUROCs = metrics['accuracy'](np.concatenate(summ['outputs']), np.concatenate(summ['labels']))
     metrics_mean = {}
     metrics_mean['accuracy'] = np.mean(AUROCs)
@@ -106,10 +105,10 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(args.model_dir, 'evaluate.log'))    
 
     # Create data loaders for test data
-    logging.info("Loading the dataset...")
+    logging.info("Loading the test dataset...")
     dataloaders = data_loader.fetch_dataloader(['test'], args.data_dir, params, args.small)
     test_dl = dataloaders['test']
-    logging.info("- done.")
+    logging.info("...done.")
 
     # Configure model
     model = net.DenseNet121(params).cuda() if params.cuda else net.DenseNet121(params)
