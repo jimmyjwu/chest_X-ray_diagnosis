@@ -1,7 +1,7 @@
 """
 This script:
-- (TODO) Extracts feature vectors from the training set and stores them in a file.
-- (TODO) Analyzes the clustering properties of the feature vectors.
+- Extracts feature vectors from the training set and stores them in a file.
+- Analyzes the clustering properties of the feature vectors.
 """
 # Python modules
 import argparse
