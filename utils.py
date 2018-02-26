@@ -169,6 +169,18 @@ def print_class_accuracy(class_accuracies):
         logging.info(class_name + ': ' + str(class_accuracy))
 
 
+def L2_distance(vector_1, vector_2):
+    """
+    Returns the L2/Euclidean distance between two vectors.
+    """
+    return numpy.linalg.norm(vector_1 - vector_2)
+
+
+def L1_distance(vector_1, vector_2):
+    """
+    Returns the L1 distance between two vectors.
+    """
+    return numpy.linalg.norm(vector_1 - vector_2, ord=1)
 
 
 

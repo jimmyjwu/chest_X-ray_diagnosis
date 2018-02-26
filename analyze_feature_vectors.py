@@ -101,20 +101,6 @@ def extract_feature_vectors(model, data_loader, parameters, features_file_path):
                 progress_bar.update()
 
 
-def L2_distance(vector_1, vector_2):
-    """
-    Returns the L2/Euclidean distance between two vectors.
-    """
-    return numpy.linalg.norm(vector_1 - vector_2)
-
-
-def L1_distance(vector_1, vector_2):
-    """
-    Returns the L1 distance between two vectors.
-    """
-    return numpy.linalg.norm(vector_1 - vector_2, ord=1)
-
-
 def average_distance_between_vectors(vectors, distance):
     """
     Returns the average distance between pairs of vectors in a given list of vectors.
@@ -125,7 +111,7 @@ def average_distance_between_vectors(vectors, distance):
     return average_distance()
 
 
-def analyze_feature_vector_clusters(features_file_path, distance=L2_distance, number_of_features=1024):
+def analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distance, number_of_features=1024):
     """
     Loads feature vectors and labels from a file and prints information about their clustering
     properties. Here, we think of the space of feature vectors, and consider a vector v_i to be in
@@ -224,12 +210,10 @@ if __name__ == '__main__':
         extract_feature_vectors(model, train_data_loader, parameters, features_file_path)
         logging.info("Done extracting features")
 
-    logging.info("Analyzing features")
-
     # Read feature vectors and labels and print information about them
-    analyze_feature_vector_clusters(features_file_path, distance=L2_distance)
-    analyze_feature_vector_clusters(features_file_path, distance=L1_distance)
-
+    logging.info("Analyzing features")
+    analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distance)
+    analyze_feature_vector_clusters(features_file_path, distance=utils.L1_distance)
     logging.info("Done analyzing features")
 
 
