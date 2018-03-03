@@ -122,8 +122,10 @@ def loss_fn(outputs, labels):
           demonstrates how you can easily define a custom loss function.
     """
     weight = torch.mean(labels, 0)
-    return -torch.sum(torch.add(torch.mul((1-weight), torch.mul(labels, torch.log(outputs))), 
-        torch.mul(weight, torch.mul(1-labels, torch.log(1-outputs)))))
+    return F.binary_cross_entropy(outputs, labels, weight=weight)
+
+    # -torch.sum(torch.add(torch.mul((1-weight), torch.mul(labels, torch.log(outputs))), 
+        # torch.mul(weight, torch.mul(1-labels, torch.log(1-outputs)))))
 
 
 def accuracy(outputs, labels):
