@@ -6,6 +6,24 @@ import torch
 
 import numpy as np
 
+CLASS_NAMES = [
+    'Atelectasis',
+    'Cardiomegaly',
+    'Effusion',
+    'Infiltration',
+    'Mass',
+    'Nodule',
+    'Pneumonia',
+    'Pneumothorax',
+    'Consolidation',
+    'Edema',
+    'Emphysema',
+    'Fibrosis',
+    'Pleural_Thickening',
+    'Hernia'
+]
+
+
 class Params():
     """Class that loads hyperparameters from a json file.
 
@@ -58,7 +76,7 @@ class RunningAverage():
         self.steps += 1
     
     def __call__(self):
-        return self.total/float(self.steps)
+        return float(self.total) / max(self.steps, 1) # Prevent divide-by-zero error
         
     
 def set_logger(log_path):
@@ -142,12 +160,27 @@ def load_checkpoint(checkpoint, model, optimizer=None):
 
     return checkpoint
 
-def print_class_accuracy(class_accuracy, logging):
-    CLASS_NAMES = [ 'Atelectasis', 'Cardiomegaly', 'Effusion', 'Infiltration', 'Mass', 'Nodule', 'Pneumonia',
-                'Pneumothorax', 'Consolidation', 'Edema', 'Emphysema', 'Fibrosis', 'Pleural_Thickening', 'Hernia']
-    for i in range(len(class_accuracy)):
-        logging.info(CLASS_NAMES[i] + ': ' + str(class_accuracy[i]))
 
+def print_class_accuracy(class_accuracies):
+    """
+    Given a list of 14 accuracy numbers, records them to the log.
+    """
+    for class_name, class_accuracy in zip(CLASS_NAMES, class_accuracies):
+        logging.info(class_name + ': ' + str(class_accuracy))
+
+
+def L2_distance(vector_1, vector_2):
+    """
+    Returns the L2/Euclidean distance between two vectors.
+    """
+    return numpy.linalg.norm(vector_1 - vector_2)
+
+
+def L1_distance(vector_1, vector_2):
+    """
+    Returns the L1 distance between two vectors.
+    """
+    return numpy.linalg.norm(vector_1 - vector_2, ord=1)
 
 
 
