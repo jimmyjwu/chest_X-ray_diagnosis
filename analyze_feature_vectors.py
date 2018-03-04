@@ -189,8 +189,7 @@ if __name__ == '__main__':
     logging.info("...done.")
 
     # Initialize the model, using CUDA if GPU available
-    # TEMPORARY: Use public CheXNet model instead of our own model so that we can load their weights
-    model = net.CheXNet(parameters).cuda() if parameters.cuda else net.CheXNet(parameters)
+    model = net.DenseNet121(parameters, return_features=True).cuda() if parameters.cuda else net.DenseNet121(parameters, return_features=True)
 
     # TEMPORARY: Wrap model in DataParallel to match CheXNet code so that we can load their weights
     model = torch.nn.DataParallel(model).cuda()
