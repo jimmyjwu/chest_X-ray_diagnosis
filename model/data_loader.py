@@ -81,14 +81,14 @@ class ChestXRayDataset(Dataset):
         return image, torch.FloatTensor(self.labels[idx])
 
 
-def fetch_dataloader(types, data_dir, params, small=None):
+def fetch_dataloader(types, data_dir, parameters, small=None):
     """
     Returns DataLoaders containing train, val, and/or test data from a given directory.
 
     Args:
         types: (list) a subset of the list ['train', 'val', 'test'] indicating which parts of dataset are desired
         data_dir: (string) name of directory containing the dataset
-        params: (Params) hyperparameters object
+        parameters: (Params) hyperparameters object
 
     Returns:
         data: (dict) a map from (a type in types) --> (a DataLoader object containing that data type)
@@ -120,9 +120,9 @@ def fetch_dataloader(types, data_dir, params, small=None):
                                        transform=transform)
 
             dataloader = DataLoader(dataset=dataset,
-                                    batch_size=params.batch_size, shuffle=shuffle,
-                                    num_workers=params.num_workers,
-                                    pin_memory=params.cuda)
+                                    batch_size=parameters.batch_size, shuffle=shuffle,
+                                    num_workers=parameters.num_workers,
+                                    pin_memory=parameters.cuda)
 
             dataloaders[split] = dataloader
 
