@@ -25,7 +25,7 @@ parser.add_argument('--restore_file',
                     default='best',
                     help="(Optional) File in --model_dir containing weights to load")
 parser.add_argument('-small',
-                    action='store_true', # Sets args.small to False by default
+                    action='store_true', # Sets arguments.small to False by default
                     help="Use small dataset instead of full dataset")
 
 
@@ -87,10 +87,10 @@ if __name__ == '__main__':
     Evaluates the model on the test set.
     """
     # Load user arguments
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
     # Load hyperparameters from JSON file
-    json_path = os.path.join(args.model_dir, 'params.json')
+    json_path = os.path.join(arguments.model_dir, 'params.json')
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     parameters = utils.Params(json_path)
 
@@ -102,22 +102,22 @@ if __name__ == '__main__':
     if parameters.cuda: torch.cuda.manual_seed(230)
         
     # Configure logger
-    utils.set_logger(os.path.join(args.model_dir, 'evaluate.log'))    
+    utils.set_logger(os.path.join(arguments.model_dir, 'evaluate.log'))
 
     # Create data loaders for test data
     logging.info("Loading the test dataset...")
-    test_dataloader = data_loader.fetch_dataloader(['test'], args.data_dir, parameters, args.small)['test']
+    test_dataloader = data_loader.fetch_dataloader(['test'], arguments.data_dir, parameters, arguments.small)['test']
     logging.info("...done.")
 
     # Configure model
     model = net.DenseNet121(parameters).cuda() if parameters.cuda else net.DenseNet121(parameters)
 
     # Load weights from trained model
-    utils.load_checkpoint(os.path.join(args.model_dir, args.restore_file + '.pth.tar'), model)
+    utils.load_checkpoint(os.path.join(arguments.model_dir, arguments.restore_file + '.pth.tar'), model)
 
     # Evaluate the model
     logging.info("Starting evaluation")
     test_metrics, class_auroc = evaluate(model, net.loss_fn, test_dataloader, net.metrics, parameters)
     utils.print_class_accuracy(class_auroc)
-    save_path = os.path.join(args.model_dir, "metrics_test_{}.json".format(args.restore_file))
+    save_path = os.path.join(arguments.model_dir, "metrics_test_{}.json".format(arguments.restore_file))
     utils.save_dict_to_json(test_metrics, save_path)
