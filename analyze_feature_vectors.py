@@ -134,20 +134,27 @@ def analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distan
         feature_vectors = []
 
         # Map from (integer j) --> (list of indices i such that feature_vectors[i] is in cluster j)
-        cluster_member_indices_for_cluster = OrderedDict((i, []) for i in range(14))
+        # Cluster 0 indicates no disease
+        cluster_member_indices_for_cluster = OrderedDict((i, []) for i in range(15))
 
-        # Each line in features_file contains feature values followed by 14 0/1's indicating labels, separated by spaces
+        # Each line in features_file contains 1024 feature values followed by
+        # 14 space-separated strings (either '0.0' or '1.0') indicating labels
         for i, line in enumerate(features_file):
             features_and_labels = line.split()
 
-            # Record features for this example, casting them as floats and placing them in a NumPy array
-            feature_vectors.append( numpy.fromiter( map(float, features_and_labels[0:number_of_features]), float ) )
+            # Record features for this example in a NumPy array of floats
+            feature_vectors.append(numpy.fromiter(features_and_labels[0:number_of_features], float))
 
-            # Record classes to which this example belongs
+            # Record classes for this example in a NumPy array of floats
+            labels = numpy.fromiter(features_and_labels[-14:], float)
+
+            # Record which disease classes (1-14) this example belongs to
             for j, label in enumerate(features_and_labels[-14:]):
-                
-                # These numbers look like '1.0' or '0.0', so cast as float
-                if float(label) == 1: cluster_member_indices_for_cluster[j].append(i)
+                if float(label) == 1: cluster_member_indices_for_cluster[j+1].append(i)
+
+            # Record whether this example belongs to no classes (i.e. no disease present)
+            if all(label == 0 for label in labels):
+                cluster_member_indices_for_cluster[0].append(i)
 
         logging.info('...done.')
 
