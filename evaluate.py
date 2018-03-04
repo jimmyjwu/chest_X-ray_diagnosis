@@ -29,7 +29,7 @@ parser.add_argument('-small',
                     help="Use small dataset instead of full dataset")
 
 
-def evaluate(model, loss_fn, dataloader, metrics, params):
+def evaluate(model, loss_fn, dataloader, metrics, parameters):
     """Evaluates a given model.
 
     Args:
@@ -37,23 +37,23 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
         loss_fn: a function that takes batch_output and batch_labels and computes the loss for the batch
         dataloader: (DataLoader) a torch.utils.data.DataLoader object that fetches data
         metrics: (dict) a dictionary of functions that compute a metric using the output and labels of each batch
-        params: (Params) hyperparameters object
+        parameters: (Params) hyperparameters object
     """
     # Set model to evaluation mode
     model.eval()
 
     # Summary for current eval loop
-    summ = {}
-    summ['loss'] = []
-    summ['outputs'] = []
-    summ['labels'] = []
+    summary = {}
+    summary['loss'] = []
+    summary['outputs'] = []
+    summary['labels'] = []
     
     # Compute metrics over the dataset
     print("Computing metrics over the dataset")
     for data_batch, labels_batch in dataloader:
 
         # Move to GPU if available
-        if params.cuda:
+        if parameters.cuda:
             data_batch, labels_batch = data_batch.cuda(async=True), labels_batch.cuda(async=True)
         
         # Fetch the next evaluation batch
@@ -65,16 +65,16 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
 
         # Extract data from torch Variable, move to cpu, convert to numpy arrays
         output_batch = output_batch.data.cpu().numpy()
-        summ['outputs'].append(output_batch)
+        summary['outputs'].append(output_batch)
         labels_batch = labels_batch.data.cpu().numpy()
-        summ['labels'].append(labels_batch)
-        summ['loss'].append(loss.data[0])
+        summary['labels'].append(labels_batch)
+        summary['loss'].append(loss.data[0])
 
     # Compute mean of all metrics in summary
-    AUROCs = metrics['accuracy'](np.concatenate(summ['outputs']), np.concatenate(summ['labels']))
+    AUROCs = metrics['accuracy'](np.concatenate(summary['outputs']), np.concatenate(summary['labels']))
     metrics_mean = {}
     metrics_mean['accuracy'] = np.mean(AUROCs)
-    metrics_mean['loss'] = sum(summ['loss'])/float(len(summ['loss']))
+    metrics_mean['loss'] = sum(summary['loss'])/float(len(summary['loss']))
 
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
@@ -92,33 +92,32 @@ if __name__ == '__main__':
     # Load hyperparameters from JSON file
     json_path = os.path.join(args.model_dir, 'params.json')
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
-    params = utils.Params(json_path)
+    parameters = utils.Params(json_path)
 
     # Record whether GPU is available
-    params.cuda = torch.cuda.is_available()
+    parameters.cuda = torch.cuda.is_available()
 
     # Set random seed for reproducible experiments
     torch.manual_seed(230)
-    if params.cuda: torch.cuda.manual_seed(230)
+    if parameters.cuda: torch.cuda.manual_seed(230)
         
     # Configure logger
     utils.set_logger(os.path.join(args.model_dir, 'evaluate.log'))    
 
     # Create data loaders for test data
     logging.info("Loading the test dataset...")
-    dataloaders = data_loader.fetch_dataloader(['test'], args.data_dir, params, args.small)
-    test_dl = dataloaders['test']
+    test_dataloader = data_loader.fetch_dataloader(['test'], args.data_dir, parameters, args.small)['test']
     logging.info("...done.")
 
     # Configure model
-    model = net.DenseNet121(params).cuda() if params.cuda else net.DenseNet121(params)
+    model = net.DenseNet121(parameters).cuda() if parameters.cuda else net.DenseNet121(parameters)
 
     # Load weights from trained model
     utils.load_checkpoint(os.path.join(args.model_dir, args.restore_file + '.pth.tar'), model)
 
     # Evaluate the model
     logging.info("Starting evaluation")
-    test_metrics, class_auroc = evaluate(model, net.loss_fn, test_dl, net.metrics, params)
+    test_metrics, class_auroc = evaluate(model, net.loss_fn, test_dataloader, net.metrics, parameters)
     utils.print_class_accuracy(class_auroc)
     save_path = os.path.join(args.model_dir, "metrics_test_{}.json".format(args.restore_file))
     utils.save_dict_to_json(test_metrics, save_path)
