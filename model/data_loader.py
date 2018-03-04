@@ -15,7 +15,7 @@ normalize = transforms.Normalize([0.485, 0.456, 0.406],
                                  [0.229, 0.224, 0.225])
 
 # Define an object that transforms a given training set example
-train_transformer = transforms.Compose([
+train_transform = transforms.Compose([
     transforms.RandomHorizontalFlip(),  # Randomly flip image horizontally
     transforms.ToTensor(),              # Transform into a Torch tensor
     normalize                           # Normalize
@@ -23,7 +23,7 @@ train_transformer = transforms.Compose([
 
 # Define an object that transforms a given evaluation (i.e. validation or test) set example
 # Note that we do not flip inputs during evaluation
-eval_transformer = transforms.Compose([
+evaluation_transform = transforms.Compose([
     transforms.ToTensor(),  # Transform into a Torch tensor
     normalize               # Normalize
 ])
@@ -109,17 +109,17 @@ def fetch_dataloader(types, data_dir, params, small=None):
             
             # Training set and val/test tests use different transforms and shuffling
             if split == 'train':
-                transform = train_transformer
+                transform = train_transform
                 shuffle = True
             else:
-                transform = eval_transformer
+                transform = evaluation_transform
                 shuffle = False
 
             dataset = ChestXRayDataset(data_dir=data_dir,
                                        image_list_file=image_list_file,
-                                       transform=eval_transformer)
+                                       transform=transform)
 
-            dataloader = DataLoader(dataset=dataset, 
+            dataloader = DataLoader(dataset=dataset,
                                     batch_size=params.batch_size, shuffle=shuffle,
                                     num_workers=params.num_workers,
                                     pin_memory=params.cuda)
