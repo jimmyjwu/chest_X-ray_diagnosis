@@ -4,7 +4,7 @@ import os
 import shutil
 import torch
 
-import numpy as np
+import numpy
 
 CLASS_NAMES = [
     'Atelectasis',
