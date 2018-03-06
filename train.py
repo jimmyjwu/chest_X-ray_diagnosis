@@ -96,7 +96,7 @@ def train(model, optimizer, loss_fn, dataloader, metrics, parameters):
     logging.info("- Train metrics: " + metrics_string)
 
 
-def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_fn, metrics, parameters, model_dir, restore_file=None):
+def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, scheduler, loss_fn, metrics, parameters, model_dir, restore_file=None):
     """
     Trains a given model and evaluates each epoch against specified metrics.
 
@@ -131,7 +131,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
 
         val_auroc = val_metrics['accuracy']
         is_best = val_auroc>=best_val_auroc
-
+        scheduler.step(val_auroc)
         # Save weights
         utils.save_checkpoint({'epoch': epoch + 1,
                                'state_dict': model.state_dict(),
@@ -154,13 +154,14 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         utils.save_dict_to_json(val_metrics, last_json_path)
 
 
+
 if __name__ == '__main__':
 
     # Load user arguments
     arguments = parser.parse_args()
 
     # Load hyperparameters from JSON file
-    json_path = os.path.join(arguments.model_dir, 'parameters.json')
+    json_path = os.path.join(arguments.model_dir, 'params.json')
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     parameters = utils.Params(json_path)
 
@@ -184,7 +185,8 @@ if __name__ == '__main__':
     # Configure model and optimizer
     model = net.DenseNet121(parameters).cuda() if parameters.cuda else net.DenseNet121(parameters)
     optimizer = optim.Adam(model.parameters(), lr=parameters.learning_rate)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
 
     # Train the model
     logging.info("Starting training for {} epoch(s)".format(parameters.num_epochs))
-    train_and_evaluate(model, train_data_loader, validation_data_loader, optimizer, net.loss_fn, net.metrics, parameters, arguments.model_dir, arguments.restore_file)
+    train_and_evaluate(model, train_data_loader, validation_data_loader, optimizer, scheduler, net.loss_fn, net.metrics, parameters, arguments.model_dir, arguments.restore_file)
