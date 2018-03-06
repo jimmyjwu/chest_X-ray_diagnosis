@@ -50,23 +50,25 @@ def evaluate(model, loss_fn, dataloader, metrics, parameters):
     
     # Compute metrics over the dataset
     print("Computing metrics over the dataset")
-    for data_batch, labels_batch in dataloader:
+    for input_batch, labels_batch in dataloader:
 
         # Move to GPU if available
         if parameters.cuda:
-            data_batch, labels_batch = data_batch.cuda(async=True), labels_batch.cuda(async=True)
+            input_batch, labels_batch = input_batch.cuda(async=True), labels_batch.cuda(async=True)
         
-        # Fetch the next evaluation batch
-        data_batch, labels_batch = Variable(data_batch), Variable(labels_batch)
+        # Wrap batch Tensors in Variables
+        input_batch, labels_batch = Variable(input_batch), Variable(labels_batch)
         
         # Compute model output
-        output_batch = model(data_batch)
+        output_batch = model(input_batch)
         loss = loss_fn(output_batch, labels_batch)
 
-        # Extract data from torch Variable, move to cpu, convert to numpy arrays
+        # Convert prediction and label Variables to Tensors, move to CPU, and convert to NumPy arrays
         output_batch = output_batch.data.cpu().numpy()
-        summary['outputs'].append(output_batch)
         labels_batch = labels_batch.data.cpu().numpy()
+
+        # Record predictions, labels, and losses for this batch
+        summary['outputs'].append(output_batch)
         summary['labels'].append(labels_batch)
         summary['loss'].append(loss.data[0])
 
