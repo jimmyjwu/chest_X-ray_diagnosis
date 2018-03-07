@@ -21,11 +21,22 @@ train_transform = transforms.Compose([
     normalize                           # Normalize
 ])
 
-# Define an object that transforms a given evaluation (i.e. validation or test) set example
-# Note that we do not flip inputs during evaluation
-evaluation_transform = transforms.Compose([
-    transforms.ToTensor(),  # Transform into a Torch tensor
-    normalize               # Normalize
+"""
+Define an object that transforms a given evaluation (i.e. validation or test) set example
+Notes:
+    - We do not flip inputs during evaluation
+    - Due to the use of TenCrop, each transformed image is a 4D tensor rather than 3D
+
+See TenCrop documentation: http://pytorch.org/docs/master/torchvision/transforms.html
+"""
+transform=transforms.Compose([
+    transforms.TenCrop(224),    # Crop image and its horizontal flip into five crops
+    transforms.Lambda(          # Transform each crop into a Torch tensor
+        lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])
+    ),
+    transforms.Lambda(          # Normalize each crop
+        lambda crops: torch.stack([normalize(crop) for crop in crops])
+    )
 ])
 
 

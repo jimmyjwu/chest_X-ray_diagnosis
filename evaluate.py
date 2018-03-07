@@ -52,23 +52,34 @@ def evaluate(model, loss_fn, dataloader, metrics, parameters):
     print("Computing metrics over the dataset")
     for input_batch, labels_batch in dataloader:
 
+        # Due to ten-cropping, input batch is a 5D Tensor
+        batch_size, number_of_crops, number_of_channels, height, width = input_batch.size()
+
         # Move to GPU if available
         if parameters.cuda:
             input_batch, labels_batch = input_batch.cuda(async=True), labels_batch.cuda(async=True)
-        
+
         # Wrap batch Tensors in Variables
         input_batch, labels_batch = Variable(input_batch), Variable(labels_batch)
-        
+
+        # Fuse batch size and crops
+        input_batch = input_batch.view(-1, number_of_channels, height, width)
+
         # Compute model output
-        output_batch = model(input_batch)
-        loss = loss_fn(output_batch, labels_batch)
+        output_batch_crops = model(input_batch)
+
+        # Average predictions for each set of crops
+        average_output_batch = output_batch_crops.view(batch_size, number_of_crops, -1).mean(1)
+
+        # Compute loss
+        loss = loss_fn(average_output_batch, labels_batch)
 
         # Convert prediction and label Variables to Tensors, move to CPU, and convert to NumPy arrays
-        output_batch = output_batch.data.cpu().numpy()
+        average_output_batch = average_output_batch.data.cpu().numpy()
         labels_batch = labels_batch.data.cpu().numpy()
 
         # Record predictions, labels, and losses for this batch
-        summary['outputs'].append(output_batch)
+        summary['outputs'].append(average_output_batch)
         summary['labels'].append(labels_batch)
         summary['loss'].append(loss.data[0])
 
