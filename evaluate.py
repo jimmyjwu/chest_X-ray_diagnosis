@@ -10,6 +10,7 @@ import os
 import numpy as np
 import torch
 from torch.autograd import Variable
+from tqdm import tqdm
 
 # Project modules
 import utils
