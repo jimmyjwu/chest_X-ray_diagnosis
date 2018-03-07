@@ -29,7 +29,7 @@ Notes:
 
 See TenCrop documentation: http://pytorch.org/docs/master/torchvision/transforms.html
 """
-transform=transforms.Compose([
+evaluation_transform = transforms.Compose([
     transforms.TenCrop(224),    # Crop image and its horizontal flip into five crops
     transforms.Lambda(          # Transform each crop into a Torch tensor
         lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])
