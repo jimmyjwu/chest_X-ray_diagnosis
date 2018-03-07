@@ -47,41 +47,46 @@ def evaluate(model, loss_fn, dataloader, metrics, parameters):
     summary['loss'] = []
     summary['outputs'] = []
     summary['labels'] = []
-    
-    # Compute metrics over the dataset
+
     print("Computing metrics over the dataset")
-    for input_batch, labels_batch in dataloader:
 
-        # Due to ten-cropping, input batch is a 5D Tensor
-        batch_size, number_of_crops, number_of_channels, height, width = input_batch.size()
+    # Use tqdm for progress bar
+    with tqdm(total=len(dataloader)) as t:
+        for input_batch, labels_batch in dataloader:
 
-        # Move to GPU if available
-        if parameters.cuda:
-            input_batch, labels_batch = input_batch.cuda(async=True), labels_batch.cuda(async=True)
+            # Due to ten-cropping, input batch is a 5D Tensor
+            batch_size, number_of_crops, number_of_channels, height, width = input_batch.size()
 
-        # Wrap batch Tensors in Variables
-        input_batch, labels_batch = Variable(input_batch, volatile=True), Variable(labels_batch, volatile=True)
+            # Move to GPU if available
+            if parameters.cuda:
+                input_batch, labels_batch = input_batch.cuda(async=True), labels_batch.cuda(async=True)
 
-        # Fuse batch size and crops
-        input_batch = input_batch.view(-1, number_of_channels, height, width)
+            # Wrap batch Tensors in Variables
+            input_batch, labels_batch = Variable(input_batch, volatile=True), Variable(labels_batch, volatile=True)
 
-        # Compute model output
-        output_batch_crops = model(input_batch)
+            # Fuse batch size and crops
+            input_batch = input_batch.view(-1, number_of_channels, height, width)
 
-        # Average predictions for each set of crops
-        average_output_batch = output_batch_crops.view(batch_size, number_of_crops, -1).mean(1)
+            # Compute model output
+            output_batch_crops = model(input_batch)
 
-        # Compute loss
-        loss = loss_fn(average_output_batch, labels_batch)
+            # Average predictions for each set of crops
+            average_output_batch = output_batch_crops.view(batch_size, number_of_crops, -1).mean(1)
 
-        # Convert prediction and label Variables to Tensors, move to CPU, and convert to NumPy arrays
-        average_output_batch = average_output_batch.data.cpu().numpy()
-        labels_batch = labels_batch.data.cpu().numpy()
+            # Compute loss
+            loss = loss_fn(average_output_batch, labels_batch)
 
-        # Record predictions, labels, and losses for this batch
-        summary['outputs'].append(average_output_batch)
-        summary['labels'].append(labels_batch)
-        summary['loss'].append(loss.data[0])
+            # Convert prediction and label Variables to Tensors, move to CPU, and convert to NumPy arrays
+            average_output_batch = average_output_batch.data.cpu().numpy()
+            labels_batch = labels_batch.data.cpu().numpy()
+
+            # Record predictions, labels, and losses for this batch
+            summary['outputs'].append(average_output_batch)
+            summary['labels'].append(labels_batch)
+            summary['loss'].append(loss.data[0])
+
+            # Update progress bar
+            t.update()
 
     # Compute mean of all metrics in summary
     AUROCs = metrics['accuracy'](np.concatenate(summary['outputs']), np.concatenate(summary['labels']))
