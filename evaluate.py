@@ -60,7 +60,7 @@ def evaluate(model, loss_fn, dataloader, metrics, parameters):
             input_batch, labels_batch = input_batch.cuda(async=True), labels_batch.cuda(async=True)
 
         # Wrap batch Tensors in Variables
-        input_batch, labels_batch = Variable(input_batch), Variable(labels_batch)
+        input_batch, labels_batch = Variable(input_batch, volatile=True), Variable(labels_batch, volatile=True)
 
         # Fuse batch size and crops
         input_batch = input_batch.view(-1, number_of_channels, height, width)
