@@ -20,7 +20,7 @@ import model.data_loader as data_loader
 
 # Configure user arguments for this script
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/256x256_images', help="Directory containing the dataset")
+parser.add_argument('--data_dir', default='data/224x224_images', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
 parser.add_argument('--restore_file',
                     default='best',
