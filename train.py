@@ -22,27 +22,28 @@ from evaluate import evaluate
 
 # Configure user arguments for this script
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/224x224_images', help="Directory containing the dataset")
-parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing parameters.json")
+parser.add_argument('--data_dir', default='data/224x224_images', help='Directory containing the dataset')
+parser.add_argument('--model_dir', default='experiments/base_model', help='Directory containing parameters.json')
 parser.add_argument('--restore_file',
                     default=None,
-                    help="(Optional) File in --model_dir containing weights to load") # 'best' or 'train'
+                    help='(Optional) File in --model_dir containing weights to load') # 'best' or 'train'
 parser.add_argument('-small',
                     action='store_true', # Sets arguments.small to False by default
-                    help="Use small dataset instead of full dataset")
+                    help='Use small dataset instead of full dataset')
 parser.add_argument('-use_tencrop',
                     action='store_true', # Sets arguments.use_tencrop to False by default
-                    help="Use ten-cropping when making predictions")
+                    help='Use ten-cropping when making predictions')
 
 
-def train(model, optimizer, loss_fn, dataloader, metrics, parameters):
-    """Trains a given model.
+def train(model, optimizer, loss_fn, data_loader, metrics, parameters):
+    """
+    Trains a given model.
 
     Args:
         model: (torch.nn.Module) a neural network
         optimizer: (torch.optim) optimizer for parameters of model
         loss_fn: a function that takes batch_output and batch_labels and computes the loss for the batch
-        dataloader: (DataLoader) a torch.utils.data.DataLoader object that fetches training data
+        data_loader: (torch.utils.data.DataLoader) a DataLoader object that fetches training data
         metrics: (dict) a dictionary of functions that compute a metric using the output and labels of each batch
         parameters: (Params) hyperparameters object
     """
@@ -57,8 +58,8 @@ def train(model, optimizer, loss_fn, dataloader, metrics, parameters):
     loss_avg = utils.RunningAverage()
 
     # Use tqdm for progress bar
-    with tqdm(total=len(dataloader)) as t:
-        for i, (train_batch, labels_batch) in enumerate(dataloader):
+    with tqdm(total=len(data_loader)) as t:
+        for i, (train_batch, labels_batch) in enumerate(data_loader):
             
             # Move to GPU if available
             if parameters.cuda:
@@ -118,24 +119,26 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, sched
     # Load weights from pre-trained model if specified
     if restore_file is not None:
         restore_path = os.path.join(arguments.model_dir, arguments.restore_file + '.pth.tar')
-        logging.info("Restoring parameters from {}".format(restore_path))
+        logging.info('Restoring parameters from {}'.format(restore_path))
         utils.load_checkpoint(restore_path, model, optimizer)
 
     best_val_auroc = 0.0
 
     for epoch in range(parameters.num_epochs):
-        # Run one epoch
-        logging.info("Epoch {}/{}".format(epoch + 1, parameters.num_epochs))
 
-        # compute number of batches in one epoch (one full pass over the training set)
+        # Train for one epoch
+        logging.info('Epoch {}/{}'.format(epoch + 1, parameters.num_epochs))
         train(model, optimizer, loss_fn, train_dataloader, metrics, parameters)
 
         # Evaluate for one epoch on validation set
         val_metrics, val_class_auroc = evaluate(model, loss_fn, val_dataloader, metrics, parameters, use_tencrop)
 
         val_auroc = val_metrics['accuracy']
-        is_best = val_auroc>=best_val_auroc
+        is_best = val_auroc >= best_val_auroc
+
+        # Adjust learning rate according to scheduler
         scheduler.step(val_auroc)
+
         # Save weights
         utils.save_checkpoint({'epoch': epoch + 1,
                                'state_dict': model.state_dict(),
@@ -145,16 +148,16 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, sched
 
         # If this is the best AUROC thus far in training, print metrics for every class and save metrics to JSON file
         if is_best:
-            logging.info("- Found new best accuracy: " + str(best_val_auroc))
+            logging.info('- Found new best accuracy: ' + str(best_val_auroc))
             utils.print_class_accuracy(val_class_auroc)
             best_val_auroc = val_auroc
 
             # Save best val metrics in a json file in the model directory
-            best_json_path = os.path.join(model_dir, "metrics_val_best_weights.json")
+            best_json_path = os.path.join(model_dir, 'metrics_val_best_weights.json')
             utils.save_dict_to_json(val_metrics, best_json_path)
 
         # Save latest val metrics in a json file in the model directory
-        last_json_path = os.path.join(model_dir, "metrics_val_last_weights.json")
+        last_json_path = os.path.join(model_dir, 'metrics_val_last_weights.json')
         utils.save_dict_to_json(val_metrics, last_json_path)
 
 
@@ -166,7 +169,7 @@ if __name__ == '__main__':
 
     # Load hyperparameters from JSON file
     json_path = os.path.join(arguments.model_dir, 'params.json')
-    assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
+    assert os.path.isfile(json_path), 'No json configuration file found at {}'.format(json_path)
     parameters = utils.Params(json_path)
 
     # Record whether GPU is available
@@ -180,11 +183,11 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.model_dir, 'train.log'))
 
     # Create data loaders for training and validation data
-    logging.info("Loading the train and validation datasets...")
+    logging.info('Loading the train and validation datasets...')
     data_loaders = data_loader.fetch_dataloader(['train', 'val'], arguments.data_dir, parameters, arguments.small, arguments.use_tencrop)
     train_data_loader = data_loaders['train']
     validation_data_loader = data_loaders['val']
-    logging.info("...done.")
+    logging.info('...done.')
 
     # Configure model and optimizer
     model = net.DenseNet121(parameters).cuda() if parameters.cuda else net.DenseNet121(parameters)
@@ -192,5 +195,5 @@ if __name__ == '__main__':
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
 
     # Train the model
-    logging.info("Starting training for {} epoch(s)".format(parameters.num_epochs))
+    logging.info('Starting training for {} epoch(s)'.format(parameters.num_epochs))
     train_and_evaluate(model, train_data_loader, validation_data_loader, optimizer, scheduler, net.loss_fn, net.metrics, parameters, arguments.model_dir, arguments.restore_file, arguments.use_tencrop)

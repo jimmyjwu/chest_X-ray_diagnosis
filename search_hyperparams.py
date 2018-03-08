@@ -1,23 +1,34 @@
-"""Peform hyperparemeters search"""
-
+"""
+This script performs hyperparameter search.
+"""
+# Python modules
 import argparse
 import os
-from subprocess import check_call
 import sys
+from subprocess import check_call
 
+# Project modules
 import utils
 
 
 PYTHON = sys.executable
+
+# Configure user arguments for this script
 parser = argparse.ArgumentParser()
-parser.add_argument('--parent_dir', default='experiments/learning_rate',
+parser.add_argument('--parent_dir',
+                    default='experiments/learning_rate',
                     help='Directory containing params.json')
-parser.add_argument('--data_dir', default='data/224x224_images', help="Directory containing the dataset")
-parser.add_argument('-small', action='store_true', # Sets arguments.small to False by default
-                    help="Use small dataset instead of full dataset")
+parser.add_argument('--data_dir',
+                    default='data/224x224_images',
+                    help='Directory containing the dataset')
+parser.add_argument('-small',
+                    action='store_true', # Sets arguments.small to False by default
+                    help='Use small dataset instead of full dataset')
+
 
 def launch_training_job(parent_dir, data_dir, small_flag, job_name, params):
-    """Launch training of the model with a set of hyperparameters in parent_dir/job_name
+    """
+    Launches training of the model with a set of hyperparameters in parent_dir/job_name.
 
     Args:
         model_dir: (string) directory containing config, weights and log
@@ -34,8 +45,8 @@ def launch_training_job(parent_dir, data_dir, small_flag, job_name, params):
     params.save(json_path)
 
     # Launch training with this config
-    cmd = "{python} train.py --model_dir={model_dir} --data_dir {data_dir} {small_flag}".format(python=PYTHON, model_dir=model_dir,
-                                                                                   data_dir=data_dir, small_flag=small_flag)
+    cmd = "{python} train.py --model_dir={model_dir} --data_dir {data_dir} {small_flag}".format(
+            python=PYTHON, model_dir=model_dir, data_dir=data_dir, small_flag=small_flag)
     print(cmd)
     check_call(cmd, shell=True)
 

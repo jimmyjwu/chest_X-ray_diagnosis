@@ -1,12 +1,16 @@
-"""Aggregates results from the metrics_eval_best_weights.json in a parent folder"""
-
+"""
+This script aggregates results from the metrics_eval_best_weights.json in a parent folder.
+"""
+# Python modules
 import argparse
 import json
 import os
 
+# Scientific and deep learning modules
 from tabulate import tabulate
 
 
+# Configure user arguments for this script
 parser = argparse.ArgumentParser()
 parser.add_argument('--parent_dir', default='experiments',
                     help='Directory containing results of experiments')

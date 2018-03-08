@@ -7,7 +7,7 @@ import logging
 import os
 
 # Scientific and deep learning modules
-import numpy as np
+import numpy
 import torch
 from torch.autograd import Variable
 from tqdm import tqdm
@@ -20,26 +20,27 @@ import model.data_loader as data_loader
 
 # Configure user arguments for this script
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/224x224_images', help="Directory containing the dataset")
-parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
+parser.add_argument('--data_dir', default='data/224x224_images', help='Directory containing the dataset')
+parser.add_argument('--model_dir', default='experiments/base_model', help='Directory containing params.json')
 parser.add_argument('--restore_file',
                     default='best',
-                    help="(Optional) File in --model_dir containing weights to load")
+                    help='(Optional) File in --model_dir containing weights to load')
 parser.add_argument('-small',
                     action='store_true', # Sets arguments.small to False by default
-                    help="Use small dataset instead of full dataset")
+                    help='Use small dataset instead of full dataset')
 parser.add_argument('-use_tencrop',
                     action='store_true', # Sets arguments.use_tencrop to False by default
-                    help="Use ten-cropping when making predictions")
+                    help='Use ten-cropping when making predictions')
 
 
-def evaluate(model, loss_fn, dataloader, metrics, parameters, use_tencrop=False):
-    """Evaluates a given model.
+def evaluate(model, loss_fn, data_loader, metrics, parameters, use_tencrop=False):
+    """
+    Evaluates a given model.
 
     Args:
         model: (torch.nn.Module) a neural network
         loss_fn: a function that takes batch_output and batch_labels and computes the loss for the batch
-        dataloader: (DataLoader) a torch.utils.data.DataLoader object that fetches data
+        data_loader: (torch.utils.data.DataLoader) a DataLoader object that fetches data
         metrics: (dict) a dictionary of functions that compute a metric using the output and labels of each batch
         parameters: (Params) hyperparameters object
         use_tencrop: (bool) whether to use ten-cropping to make predictions
@@ -54,8 +55,8 @@ def evaluate(model, loss_fn, dataloader, metrics, parameters, use_tencrop=False)
     summary['labels'] = []
 
     # Use tqdm for progress bar
-    with tqdm(total=len(dataloader)) as t:
-        for input_batch, labels_batch in dataloader:
+    with tqdm(total=len(data_loader)) as t:
+        for input_batch, labels_batch in data_loader:
 
             # Move data to GPU if available
             if parameters.cuda:
@@ -98,13 +99,13 @@ def evaluate(model, loss_fn, dataloader, metrics, parameters, use_tencrop=False)
             t.update()
 
     # Compute mean of all metrics in summary
-    AUROCs = metrics['accuracy'](np.concatenate(summary['outputs']), np.concatenate(summary['labels']))
+    AUROCs = metrics['accuracy'](numpy.concatenate(summary['outputs']), numpy.concatenate(summary['labels']))
     metrics_mean = {}
-    metrics_mean['accuracy'] = np.mean(AUROCs)
+    metrics_mean['accuracy'] = numpy.mean(AUROCs)
     metrics_mean['loss'] = sum(summary['loss'])/float(len(summary['loss']))
 
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
-    logging.info("- Eval metrics : " + metrics_string)
+    logging.info('- Eval metrics : ' + metrics_string)
     
     return metrics_mean, AUROCs
 
@@ -118,7 +119,7 @@ if __name__ == '__main__':
 
     # Load hyperparameters from JSON file
     json_path = os.path.join(arguments.model_dir, 'params.json')
-    assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
+    assert os.path.isfile(json_path), 'No json configuration file found at {}'.format(json_path)
     parameters = utils.Params(json_path)
 
     # Record whether GPU is available
@@ -132,9 +133,9 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.model_dir, 'evaluate.log'))
 
     # Create data loaders for test data
-    logging.info("Loading the test dataset...")
+    logging.info('Loading the test dataset...')
     test_dataloader = data_loader.fetch_dataloader(['test'], arguments.data_dir, parameters, arguments.small, arguments.use_tencrop)['test']
-    logging.info("...done.")
+    logging.info('...done.')
 
     # Configure model
     model = net.DenseNet121(parameters).cuda() if parameters.cuda else net.DenseNet121(parameters)
@@ -143,8 +144,8 @@ if __name__ == '__main__':
     utils.load_checkpoint(os.path.join(arguments.model_dir, arguments.restore_file + '.pth.tar'), model)
 
     # Evaluate the model
-    logging.info("Starting evaluation")
+    logging.info('Starting evaluation')
     test_metrics, class_auroc = evaluate(model, net.loss_fn, test_dataloader, net.metrics, parameters, arguments.use_tencrop)
     utils.print_class_accuracy(class_auroc)
-    save_path = os.path.join(arguments.model_dir, "metrics_test_{}.json".format(arguments.restore_file))
+    save_path = os.path.join(arguments.model_dir, 'metrics_test_{}.json'.format(arguments.restore_file))
     utils.save_dict_to_json(test_metrics, save_path)

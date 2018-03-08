@@ -24,24 +24,24 @@ import model.data_loader as data_loader
 
 # Configure user arguments for this script
 argument_parser = argparse.ArgumentParser()
-argument_parser.add_argument('--data_directory', default='data/224x224_images', help="Directory containing the dataset")
-argument_parser.add_argument('--model_directory', default='experiments/base_model', help="Directory containing params.json")
+argument_parser.add_argument('--data_directory', default='data/224x224_images', help='Directory containing the dataset')
+argument_parser.add_argument('--model_directory', default='experiments/base_model', help='Directory containing params.json')
 
 argument_parser.add_argument('--features_directory',
                              default='feature_data',
-                             help="Directory containing files related to feature extraction")
+                             help='Directory containing files related to feature extraction')
 
 argument_parser.add_argument('--restore_file',
                              default='CheXNet_model.pth.tar',
-                             help="File in --features_directory containing weights to load")
+                             help='File in --features_directory containing weights to load')
 
 argument_parser.add_argument('--features_file',
                              default='train_features_and_labels.txt',
-                             help="File in --features_directory to which features should be saved")
+                             help='File in --features_directory to which features should be saved')
 
 argument_parser.add_argument('-small',
                              action='store_true', # Sets arguments.small to False by default
-                             help="Use small dataset instead of full dataset")
+                             help='Use small dataset instead of full dataset')
 
 
 def extract_feature_vectors(model, data_loader, parameters, features_file_path):
@@ -191,9 +191,9 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.features_directory, 'analyze_feature_vectors.log'))
 
     # Create data loader for training data
-    logging.info("Loading dataset...")
+    logging.info('Loading dataset...')
     train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters, arguments.small)['train']
-    logging.info("...done.")
+    logging.info('...done.')
 
     # Initialize the model, using CUDA if GPU available
     model = net.DenseNet121(parameters, return_features=True).cuda() if parameters.cuda else net.DenseNet121(parameters, return_features=True)
@@ -210,17 +210,17 @@ if __name__ == '__main__':
     
     # Extract feature vectors and write out to user-specified file (if such file does not yet exist)
     if os.path.isfile(features_file_path):
-        logging.info("Features file detected; skipping feature extraction")
+        logging.info('Features file detected; skipping feature extraction')
     else:
-        logging.info("Features file not detected; now extracting features...")
+        logging.info('Features file not detected; now extracting features...')
         extract_feature_vectors(model, train_data_loader, parameters, features_file_path)
-        logging.info("...done.")
+        logging.info('...done.')
 
     # Read feature vectors and labels and print information about them
-    logging.info("Analyzing features...")
+    logging.info('Analyzing features...')
     analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distance)
     analyze_feature_vector_clusters(features_file_path, distance=utils.L1_distance)
-    logging.info("...done.")
+    logging.info('...done.')
 
 
 
