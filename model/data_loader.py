@@ -21,15 +21,23 @@ train_transform = transforms.Compose([
     normalize                           # Normalize
 ])
 
+# Define an object that transforms a given evaluation (i.e. validation or test) set example
+# Note that we do not flip inputs during evaluation
+evaluation_transform = transforms.Compose([
+    transforms.ToTensor(),  # Transform into a Torch tensor
+    normalize               # Normalize
+])
+
 """
 Define an object that transforms a given evaluation (i.e. validation or test) set example
+including by taking ten crops of the image (ten-cropping)
 Notes:
     - We do not flip inputs during evaluation
-    - Due to the use of TenCrop, each transformed image is a 4D tensor rather than 3D
+    - Due to the use of ten-cropping, each transformed image is a 4D tensor rather than 3D
 
 See TenCrop documentation: http://pytorch.org/docs/master/torchvision/transforms.html
 """
-evaluation_transform = transforms.Compose([
+evaluation_transform_with_tencrop = transforms.Compose([
     transforms.TenCrop(224),    # Crop image and its horizontal flip into five crops
     transforms.Lambda(          # Transform each crop into a Torch tensor
         lambda crops: torch.stack([transforms.ToTensor()(crop) for crop in crops])
@@ -92,7 +100,7 @@ class ChestXRayDataset(Dataset):
         return image, torch.FloatTensor(self.labels[idx])
 
 
-def fetch_dataloader(types, data_dir, parameters, small=None):
+def fetch_dataloader(types, data_dir, parameters, small=None, use_tencrop=False):
     """
     Returns DataLoaders containing train, val, and/or test data from a given directory.
 
@@ -100,6 +108,7 @@ def fetch_dataloader(types, data_dir, parameters, small=None):
         types: (list) a subset of the list ['train', 'val', 'test'] indicating which parts of dataset are desired
         data_dir: (string) name of directory containing the dataset
         parameters: (Params) hyperparameters object
+        use_tencrop: (bool) whether to use ten-cropping in val/test transforms
 
     Returns:
         data: (dict) a map from (a type in types) --> (a DataLoader object containing that data type)
@@ -123,8 +132,9 @@ def fetch_dataloader(types, data_dir, parameters, small=None):
                 transform = train_transform
                 shuffle = True
             else:
-                transform = evaluation_transform
                 shuffle = False
+                # If user specified '-use_tencrop' flag, use the evaluation transform that includes ten-cropping
+                transform = evaluation_transform_with_tencrop if use_tencrop else evaluation_transform
 
             dataset = ChestXRayDataset(data_dir=data_dir,
                                        image_list_file=image_list_file,

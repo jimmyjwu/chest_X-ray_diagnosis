@@ -30,6 +30,9 @@ parser.add_argument('--restore_file',
 parser.add_argument('-small',
                     action='store_true', # Sets arguments.small to False by default
                     help="Use small dataset instead of full dataset")
+parser.add_argument('-use_tencrop',
+                    action='store_true', # Sets arguments.use_tencrop to False by default
+                    help="Use ten-cropping when making predictions")
 
 
 def train(model, optimizer, loss_fn, dataloader, metrics, parameters):
@@ -96,7 +99,7 @@ def train(model, optimizer, loss_fn, dataloader, metrics, parameters):
     logging.info("- Train metrics: " + metrics_string)
 
 
-def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_fn, metrics, parameters, model_dir, restore_file=None):
+def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_fn, metrics, parameters, model_dir, restore_file=None, use_tencrop=False):
     """
     Trains a given model and evaluates each epoch against specified metrics.
 
@@ -110,6 +113,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         parameters: (Params) hyperparameters object
         model_dir: (string) directory containing config, weights and log
         restore_file: (string) optional- name of file to restore from (without its extension .pth.tar)
+        use_tencrop: (bool) whether to use ten-cropping to make predictions during evaluation
     """
     # Load weights from pre-trained model if specified
     if restore_file is not None:
@@ -127,7 +131,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, loss_
         train(model, optimizer, loss_fn, train_dataloader, metrics, parameters)
 
         # Evaluate for one epoch on validation set
-        val_metrics, val_class_auroc = evaluate(model, loss_fn, val_dataloader, metrics, parameters)
+        val_metrics, val_class_auroc = evaluate(model, loss_fn, val_dataloader, metrics, parameters, use_tencrop)
 
         val_auroc = val_metrics['accuracy']
         is_best = val_auroc>=best_val_auroc
@@ -187,4 +191,4 @@ if __name__ == '__main__':
 
     # Train the model
     logging.info("Starting training for {} epoch(s)".format(parameters.num_epochs))
-    train_and_evaluate(model, train_data_loader, validation_data_loader, optimizer, net.loss_fn, net.metrics, parameters, arguments.model_dir, arguments.restore_file)
+    train_and_evaluate(model, train_data_loader, validation_data_loader, optimizer, net.loss_fn, net.metrics, parameters, arguments.model_dir, arguments.restore_file, arguments.use_tencrop)

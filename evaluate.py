@@ -28,9 +28,12 @@ parser.add_argument('--restore_file',
 parser.add_argument('-small',
                     action='store_true', # Sets arguments.small to False by default
                     help="Use small dataset instead of full dataset")
+parser.add_argument('-use_tencrop',
+                    action='store_true', # Sets arguments.use_tencrop to False by default
+                    help="Use ten-cropping when making predictions")
 
 
-def evaluate(model, loss_fn, dataloader, metrics, parameters):
+def evaluate(model, loss_fn, dataloader, metrics, parameters, use_tencrop=False):
     """Evaluates a given model.
 
     Args:
@@ -39,6 +42,7 @@ def evaluate(model, loss_fn, dataloader, metrics, parameters):
         dataloader: (DataLoader) a torch.utils.data.DataLoader object that fetches data
         metrics: (dict) a dictionary of functions that compute a metric using the output and labels of each batch
         parameters: (Params) hyperparameters object
+        use_tencrop: (bool) whether to use ten-cropping to make predictions
     """
     # Set model to evaluation mode
     model.eval()
@@ -49,40 +53,44 @@ def evaluate(model, loss_fn, dataloader, metrics, parameters):
     summary['outputs'] = []
     summary['labels'] = []
 
-    print("Computing metrics over the dataset")
-
     # Use tqdm for progress bar
     with tqdm(total=len(dataloader)) as t:
         for input_batch, labels_batch in dataloader:
 
-            # Due to ten-cropping, input batch is a 5D Tensor
-            batch_size, number_of_crops, number_of_channels, height, width = input_batch.size()
-
-            # Move to GPU if available
+            # Move data to GPU if available
             if parameters.cuda:
                 input_batch, labels_batch = input_batch.cuda(async=True), labels_batch.cuda(async=True)
 
             # Wrap batch Tensors in Variables
+            # Note: Setting "volatile=True" during evaluation prevents needlessly storing gradients, saving memory
             input_batch, labels_batch = Variable(input_batch, volatile=True), Variable(labels_batch, volatile=True)
 
-            # Fuse batch size and crops
-            input_batch = input_batch.view(-1, number_of_channels, height, width)
+            if use_tencrop:
+                # Due to ten-cropping, input batch is a 5D Tensor
+                batch_size, number_of_crops, number_of_channels, height, width = input_batch.size()
 
-            # Compute model output
-            output_batch_crops = model(input_batch)
+                # Fuse batch size and crops
+                input_batch = input_batch.view(-1, number_of_channels, height, width)
 
-            # Average predictions for each set of crops
-            average_output_batch = output_batch_crops.view(batch_size, number_of_crops, -1).mean(1)
+                # Compute model output
+                output_batch_crops = model(input_batch)
+
+                # Average predictions for each set of crops
+                output_batch = output_batch_crops.view(batch_size, number_of_crops, -1).mean(1)
+
+            else:
+                # Compute model output
+                output_batch = model(input_batch)
 
             # Compute loss
-            loss = loss_fn(average_output_batch, labels_batch)
+            loss = loss_fn(output_batch, labels_batch)
 
             # Convert prediction and label Variables to Tensors, move to CPU, and convert to NumPy arrays
-            average_output_batch = average_output_batch.data.cpu().numpy()
+            output_batch = output_batch.data.cpu().numpy()
             labels_batch = labels_batch.data.cpu().numpy()
 
             # Record predictions, labels, and losses for this batch
-            summary['outputs'].append(average_output_batch)
+            summary['outputs'].append(output_batch)
             summary['labels'].append(labels_batch)
             summary['loss'].append(loss.data[0])
 
@@ -136,7 +144,7 @@ if __name__ == '__main__':
 
     # Evaluate the model
     logging.info("Starting evaluation")
-    test_metrics, class_auroc = evaluate(model, net.loss_fn, test_dataloader, net.metrics, parameters)
+    test_metrics, class_auroc = evaluate(model, net.loss_fn, test_dataloader, net.metrics, parameters, arguments.use_tencrop)
     utils.print_class_accuracy(class_auroc)
     save_path = os.path.join(arguments.model_dir, "metrics_test_{}.json".format(arguments.restore_file))
     utils.save_dict_to_json(test_metrics, save_path)
