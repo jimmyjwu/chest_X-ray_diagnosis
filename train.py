@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
     # Create data loaders for training and validation data
     logging.info("Loading the train and validation datasets...")
-    data_loaders = data_loader.fetch_dataloader(['train', 'val'], arguments.data_dir, parameters, arguments.small)
+    data_loaders = data_loader.fetch_dataloader(['train', 'val'], arguments.data_dir, parameters, arguments.small, arguments.use_tencrop)
     train_data_loader = data_loaders['train']
     validation_data_loader = data_loaders['val']
     logging.info("...done.")

@@ -133,7 +133,7 @@ if __name__ == '__main__':
 
     # Create data loaders for test data
     logging.info("Loading the test dataset...")
-    test_dataloader = data_loader.fetch_dataloader(['test'], arguments.data_dir, parameters, arguments.small)['test']
+    test_dataloader = data_loader.fetch_dataloader(['test'], arguments.data_dir, parameters, arguments.small, arguments.use_tencrop)['test']
     logging.info("...done.")
 
     # Configure model
