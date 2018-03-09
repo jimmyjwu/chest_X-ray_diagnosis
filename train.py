@@ -190,7 +190,7 @@ if __name__ == '__main__':
     logging.info('...done.')
 
     # Configure model and optimizer
-    model = net.DenseNet121(parameters).cuda() if parameters.cuda else net.DenseNet121(parameters)
+    model = net.DenseNet169(parameters).cuda() if parameters.cuda else net.DenseNet169(parameters)
     optimizer = optim.Adam(model.parameters(), lr=parameters.learning_rate)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
 

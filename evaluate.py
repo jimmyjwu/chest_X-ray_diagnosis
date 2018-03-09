@@ -138,7 +138,7 @@ if __name__ == '__main__':
     logging.info('...done.')
 
     # Configure model
-    model = net.DenseNet121(parameters).cuda() if parameters.cuda else net.DenseNet121(parameters)
+    model = net.DenseNet169(parameters).cuda() if parameters.cuda else net.DenseNet169(parameters)
 
     # Load weights from trained model
     utils.load_checkpoint(os.path.join(arguments.model_dir, arguments.restore_file + '.pth.tar'), model)
