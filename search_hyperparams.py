@@ -64,8 +64,7 @@ if __name__ == "__main__":
         small_flag = ""
     
     # Perform hypersearch over one parameter
-    # learning_rates = [1e-4, 1e-3, 1e-2]
-    learning_rates = [1e-5, 5e-5]
+    learning_rates = [1e-5, 1e-4, 1e-3, 1e-2]
 
     for learning_rate in learning_rates:
         # Modify the relevant parameter in params
