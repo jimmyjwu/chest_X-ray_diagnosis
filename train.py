@@ -148,9 +148,9 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, sched
 
         # If this is the best AUROC thus far in training, print metrics for every class and save metrics to JSON file
         if is_best:
+            best_val_auroc = val_auroc
             logging.info('- Found new best accuracy: ' + str(best_val_auroc))
             utils.print_class_accuracy(val_class_auroc)
-            best_val_auroc = val_auroc
 
             # Save best val metrics in a json file in the model directory
             best_json_path = os.path.join(model_dir, 'metrics_val_best_weights.json')
