@@ -207,7 +207,7 @@ if __name__ == '__main__':
     # Features file should be under features_directory; prepend 'small_' if user specifies '--small'
     features_file_name = ('small_' if arguments.small else '') + arguments.features_file
     features_file_path = os.path.join(arguments.features_directory, features_file_name)
-    
+
     # Extract feature vectors and write out to user-specified file (if such file does not yet exist)
     if os.path.isfile(features_file_path):
         logging.info('Features file detected; skipping feature extraction')
