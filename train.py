@@ -183,7 +183,7 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.model_dir, 'train.log'))
 
     # Create data loaders for training and validation data
-    logging.info('Loading the train and validation datasets...')
+    logging.info('Loading train and validation datasets...')
     data_loaders = data_loader.fetch_dataloader(['train', 'val'], arguments.data_dir, parameters, arguments.small, arguments.use_tencrop)
     train_data_loader = data_loaders['train']
     validation_data_loader = data_loaders['val']
