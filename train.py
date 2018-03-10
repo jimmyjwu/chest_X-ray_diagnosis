@@ -26,7 +26,7 @@ parser.add_argument('--data_dir', default='data/224x224_images', help='Directory
 parser.add_argument('--model_dir', default='experiments/base_model', help='Directory containing params.json')
 parser.add_argument('--restore_file',
                     default=None,
-                    help='(Optional) File in --model_dir containing weights to load') # 'best' or 'train'
+                    help='(Optional) File in --model_dir containing weights to load, e.g. "best" or "last"')
 parser.add_argument('-small',
                     action='store_true', # Sets arguments.small to False by default
                     help='Use small dataset instead of full dataset')
@@ -194,12 +194,11 @@ if __name__ == '__main__':
     optimizer = optim.Adam(model.parameters(), lr=parameters.learning_rate, weight_decay=parameters.L2_penalty)
 
     # Configure schedule for decaying learning rate
-    # Note: Setting verbose to True prints a message every time the learning rate is reduced
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer,
                                                      mode='min',
                                                      factor=parameters.learning_rate_decay_factor,
                                                      patience=parameters.learning_rate_decay_patience,
-                                                     verbose=True)
+                                                     verbose=True) # Print message every time learning rate is reduced
 
     # Train the model
     logging.info('Starting training for {} epoch(s)'.format(parameters.num_epochs))
