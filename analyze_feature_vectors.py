@@ -191,7 +191,7 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.features_directory, 'analyze_feature_vectors.log'))
 
     # Create data loader for training data
-    logging.info('Loading dataset...')
+    logging.info('Loading ' + ('small ' if arguments.small else '') + 'train dataset...')
     train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters, arguments.small)['train']
     logging.info('...done.')
 
