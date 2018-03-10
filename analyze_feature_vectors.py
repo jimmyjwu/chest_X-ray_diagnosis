@@ -32,8 +32,8 @@ argument_parser.add_argument('--features_directory',
                              help='Directory containing files related to feature extraction')
 
 argument_parser.add_argument('--restore_file',
-                             default='CheXNet_model.pth.tar',
-                             help='File in --features_directory containing weights to load')
+                             default='best',
+                             help='File in --model_dir containing weights to load, e.g. "best" or "last" (default: "best")')
 
 argument_parser.add_argument('--features_file',
                              default='train_features_and_labels.txt',
@@ -195,14 +195,11 @@ if __name__ == '__main__':
     train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters, arguments.small)['train']
     logging.info('...done.')
 
-    # Initialize the model, using CUDA if GPU available
-    model = net.DenseNet121(parameters, return_features=True).cuda() if parameters.cuda else net.DenseNet121(parameters, return_features=True)
+    # Configure model
+    model = net.DenseNet169(parameters, return_features=True).cuda() if parameters.cuda else net.DenseNet169(parameters, return_features=True)
 
-    # TEMPORARY: Wrap model in DataParallel to match CheXNet code so that we can load their weights
-    model = torch.nn.DataParallel(model).cuda()
-
-    # TEMPORARY: Load weights from pre-trained CheXNet model file
-    utils.load_checkpoint(os.path.join(arguments.features_directory, arguments.restore_file), model)
+    # Load weights from trained model
+    utils.load_checkpoint(os.path.join(arguments.model_dir, arguments.restore_file + '.pth.tar'), model)
 
     # Features file should be under features_directory; prepend 'small_' if user specifies '--small'
     features_file_name = ('small_' if arguments.small else '') + arguments.features_file
