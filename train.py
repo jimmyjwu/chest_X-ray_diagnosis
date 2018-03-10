@@ -21,18 +21,18 @@ from evaluate import evaluate
 
 
 # Configure user arguments for this script
-parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/224x224_images', help='Directory containing the dataset')
-parser.add_argument('--model_dir', default='experiments/base_model', help='Directory containing params.json')
-parser.add_argument('--restore_file',
-                    default=None,
-                    help='(Optional) File in --model_dir containing weights to load, e.g. "best" or "last"')
-parser.add_argument('-small',
-                    action='store_true', # Sets arguments.small to False by default
-                    help='Use small dataset instead of full dataset')
-parser.add_argument('-use_tencrop',
-                    action='store_true', # Sets arguments.use_tencrop to False by default
-                    help='Use ten-cropping when making predictions')
+argument_parser = argparse.ArgumentParser()
+argument_parser.add_argument('--data_dir', default='data/224x224_images', help='Directory containing the dataset')
+argument_parser.add_argument('--model_dir', default='experiments/base_model', help='Directory containing params.json')
+argument_parser.add_argument('--restore_file',
+                             default=None,
+                             help='(Optional) File in --model_dir containing weights to load, e.g. "best" or "last"')
+argument_parser.add_argument('-small',
+                             action='store_true', # Sets arguments.small to False by default
+                             help='Use small dataset instead of full dataset')
+argument_parser.add_argument('-use_tencrop',
+                             action='store_true', # Sets arguments.use_tencrop to False by default
+                             help='Use ten-cropping when making predictions')
 
 
 def train(model, optimizer, loss_fn, data_loader, metrics, parameters):
@@ -165,7 +165,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, sched
 if __name__ == '__main__':
 
     # Load user arguments
-    arguments = parser.parse_args()
+    arguments = argument_parser.parse_args()
 
     # Load hyperparameters from JSON file
     json_path = os.path.join(arguments.model_dir, 'params.json')

@@ -25,7 +25,8 @@ CLASS_NAMES = [
 
 
 class Params():
-    """Class that loads hyperparameters from a json file.
+    """
+    Class that loads hyperparameters from a JSON file.
 
     Example:
     ```
@@ -57,7 +58,8 @@ class Params():
 
 
 class RunningAverage():
-    """A simple class that maintains the running average of a quantity
+    """
+    Class that maintains the running average of a quantity
     
     Example:
     ```
@@ -80,18 +82,13 @@ class RunningAverage():
         
     
 def set_logger(log_path):
-    """Set the logger to log info in terminal and file `log_path`.
+    """
+    Configures a logger with a given log file path, so that any message sent to the logger via
+            logging.info('Your message here')
+    will be printed to the terminal as well as stored in the permanent log file.
 
-    In general, it is useful to have a logger so that every output to the terminal is saved
-    in a permanent file. Here we save it to `model_dir/train.log`.
-
-    Example:
-    ```
-    logging.info("Starting training...")
-    ```
-
-    Args:
-        log_path: (string) where to log
+    Arguments:
+        log_path: (string) path to the file where logging messages should be stored
     """
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
@@ -109,9 +106,10 @@ def set_logger(log_path):
 
 
 def save_dict_to_json(d, json_path):
-    """Saves dict of floats in json file
+    """
+    Saves a dictionary of floats in a JSON file
 
-    Args:
+    Arguments:
         d: (dict) of float-castable values (np.float, int, float, etc.)
         json_path: (string) path to json file
     """
@@ -122,10 +120,13 @@ def save_dict_to_json(d, json_path):
 
 
 def save_checkpoint(state, is_best, checkpoint):
-    """Saves model and training parameters at checkpoint + 'last.pth.tar'. If is_best==True, also saves
-    checkpoint + 'best.pth.tar'
+    """
+    Saves weights and training parameters for a model in a file named
+            checkpoint + 'last.pth.tar'
+    If is_best is True, also saves these to
+            checkpoint + 'best.pth.tar'
 
-    Args:
+    Arguments:
         state: (dict) contains model's state_dict, may contain other keys such as epoch, optimizer state_dict
         is_best: (bool) True if it is the best model seen till now
         checkpoint: (string) folder where parameters are to be saved
@@ -142,10 +143,11 @@ def save_checkpoint(state, is_best, checkpoint):
 
 
 def load_checkpoint(checkpoint, model, optimizer=None):
-    """Loads model parameters (state_dict) from file_path. If optimizer is provided, loads state_dict of
+    """
+    Loads model parameters (state_dict) from file_path. If optimizer is provided, loads state_dict of
     optimizer assuming it is present in checkpoint.
 
-    Args:
+    Arguments:
         checkpoint: (string) filename which needs to be loaded
         model: (torch.nn.Module) model for which the parameters are loaded
         optimizer: (torch.optim) optional: resume optimizer from checkpoint
