@@ -118,7 +118,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, sched
     """
     # Load weights from pre-trained model if specified
     if restore_file is not None:
-        restore_path = os.path.join(arguments.model_dir, arguments.restore_file + '.pth.tar')
+        restore_path = os.path.join(model_dir, restore_file + '.pth.tar')
         logging.info('Restoring parameters from {}'.format(restore_path))
         utils.load_checkpoint(restore_path, model, optimizer)
 
