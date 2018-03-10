@@ -24,7 +24,7 @@ parser.add_argument('--data_dir', default='data/224x224_images', help='Directory
 parser.add_argument('--model_dir', default='experiments/base_model', help='Directory containing params.json')
 parser.add_argument('--restore_file',
                     default='best',
-                    help='(Optional) File in --model_dir containing weights to load')
+                    help='File in --model_dir containing weights to load, e.g. "best" or "last" (default: "best")')
 parser.add_argument('-small',
                     action='store_true', # Sets arguments.small to False by default
                     help='Use small dataset instead of full dataset')
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.model_dir, 'evaluate.log'))
 
     # Create data loaders for test data
-    logging.info('Loading the test dataset...')
+    logging.info('Loading test dataset...')
     test_dataloader = data_loader.fetch_dataloader(['test'], arguments.data_dir, parameters, arguments.small, arguments.use_tencrop)['test']
     logging.info('...done.')
 

@@ -26,7 +26,7 @@ parser.add_argument('--data_dir', default='data/224x224_images', help='Directory
 parser.add_argument('--model_dir', default='experiments/base_model', help='Directory containing params.json')
 parser.add_argument('--restore_file',
                     default=None,
-                    help='(Optional) File in --model_dir containing weights to load') # 'best' or 'train'
+                    help='(Optional) File in --model_dir containing weights to load, e.g. "best" or "last"')
 parser.add_argument('-small',
                     action='store_true', # Sets arguments.small to False by default
                     help='Use small dataset instead of full dataset')
@@ -118,7 +118,7 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, sched
     """
     # Load weights from pre-trained model if specified
     if restore_file is not None:
-        restore_path = os.path.join(arguments.model_dir, arguments.restore_file + '.pth.tar')
+        restore_path = os.path.join(model_dir, restore_file + '.pth.tar')
         logging.info('Restoring parameters from {}'.format(restore_path))
         utils.load_checkpoint(restore_path, model, optimizer)
 
@@ -183,7 +183,7 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.model_dir, 'train.log'))
 
     # Create data loaders for training and validation data
-    logging.info('Loading the train and validation datasets...')
+    logging.info('Loading train and validation datasets...')
     data_loaders = data_loader.fetch_dataloader(['train', 'val'], arguments.data_dir, parameters, arguments.small, arguments.use_tencrop)
     train_data_loader = data_loaders['train']
     validation_data_loader = data_loaders['val']
@@ -194,12 +194,11 @@ if __name__ == '__main__':
     optimizer = optim.Adam(model.parameters(), lr=parameters.learning_rate, weight_decay=parameters.L2_penalty)
 
     # Configure schedule for decaying learning rate
-    # Note: Setting verbose to True prints a message every time the learning rate is reduced
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer,
                                                      mode='min',
                                                      factor=parameters.learning_rate_decay_factor,
                                                      patience=parameters.learning_rate_decay_patience,
-                                                     verbose=True)
+                                                     verbose=True) # Print message every time learning rate is reduced
 
     # Train the model
     logging.info('Starting training for {} epoch(s)'.format(parameters.num_epochs))
