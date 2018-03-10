@@ -199,7 +199,7 @@ if __name__ == '__main__':
     model = net.DenseNet169(parameters, return_features=True).cuda() if parameters.cuda else net.DenseNet169(parameters, return_features=True)
 
     # Load weights from trained model
-    utils.load_checkpoint(os.path.join(arguments.model_dir, arguments.restore_file + '.pth.tar'), model)
+    utils.load_checkpoint(os.path.join(arguments.model_directory, arguments.restore_file + '.pth.tar'), model)
 
     # Features file should be under features_directory; prepend 'small_' if user specifies '--small'
     features_file_name = ('small_' if arguments.small else '') + arguments.features_file
