@@ -191,8 +191,8 @@ if __name__ == '__main__':
 
     # Configure model and optimizer
     model = net.DenseNet169(parameters).cuda() if parameters.cuda else net.DenseNet169(parameters)
-    optimizer = optim.Adam(model.parameters(), lr=parameters.learning_rate)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min')
+    optimizer = optim.Adam(model.parameters(), lr=parameters.learning_rate, weight_decay=parameters.L2_penalty)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=parameters.learning_rate_decay_factor, patience=parameters.learning_rate_decay_patience)
 
     # Train the model
     logging.info('Starting training for {} epoch(s)'.format(parameters.num_epochs))

@@ -16,7 +16,7 @@ PYTHON = sys.executable
 # Configure user arguments for this script
 parser = argparse.ArgumentParser()
 parser.add_argument('--parent_dir',
-                    default='experiments/learning_rate',
+                    default='experiments/L2_penalty',
                     help='Directory containing params.json')
 parser.add_argument('--data_dir',
                     default='data/224x224_images',
@@ -62,8 +62,9 @@ if __name__ == "__main__":
         small_flag = "-small"
     else:
         small_flag = ""
-    
-    # Perform hypersearch over one parameter
+
+    """
+    # Perform search over learning rate
     learning_rates = [1e-5, 1e-4, 1e-3, 1e-2]
 
     for learning_rate in learning_rates:
@@ -73,3 +74,18 @@ if __name__ == "__main__":
         # Launch job (name has to be unique)
         job_name = "learning_rate_{}".format(learning_rate)
         launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)
+    """
+
+    # Perform search over L2 penalty
+    L2_penalties = [1e-4, 1e-3]
+
+    for L2_penalty in L2_penalties:
+        # Modify the relevant parameter in params
+        params.L2_penalty = L2_penalty
+
+        # Launch job (name has to be unique)
+        job_name = "L2_penalty_{}".format(L2_penalty)
+        launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)
+
+
+
