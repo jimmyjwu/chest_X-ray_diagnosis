@@ -31,7 +31,7 @@ class DenseNet169(nn.Module):
         self.return_features = return_features
 
         # Obtain a standard DenseNet169 model pre-trained on ImageNet
-        self.densenet169 = torchvision.models.densenet169(pretrained=True)
+        self.densenet169 = torchvision.models.densenet169(pretrained=True, drop_rate=parameters.dropout_rate)
 
         # Train only the last few/classification layers
         # for parameter in self.densenet169.parameters():
@@ -100,7 +100,7 @@ class DenseNet121(nn.Module):
         self.return_features = return_features
 
         # Obtain a standard DenseNet121 model pre-trained on ImageNet
-        self.densenet121 = torchvision.models.densenet121(pretrained=True)
+        self.densenet121 = torchvision.models.densenet121(pretrained=True, drop_rate=parameters.dropout_rate)
 
         # Train only the last few/classification layers
         # for parameter in self.densenet121.parameters():
