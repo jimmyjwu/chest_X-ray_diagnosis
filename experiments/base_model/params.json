@@ -5,6 +5,7 @@
     "batch_size": 16,
     "num_epochs": 10,
     "L2_penalty": 0,
+    "dropout_rate": 0,
     "num_channels": 32,
     "save_summary_steps": 100,
     "num_workers": 4,
