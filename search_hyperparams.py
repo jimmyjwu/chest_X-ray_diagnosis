@@ -16,7 +16,7 @@ PYTHON = sys.executable
 # Configure user arguments for this script
 parser = argparse.ArgumentParser()
 parser.add_argument('--parent_dir',
-                    default='experiments/L2_penalty',
+                    default='experiments/dropout_rate',
                     help='Directory containing params.json')
 parser.add_argument('--data_dir',
                     default='data/224x224_images',
