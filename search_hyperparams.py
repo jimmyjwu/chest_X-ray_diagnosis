@@ -16,7 +16,7 @@ PYTHON = sys.executable
 # Configure user arguments for this script
 parser = argparse.ArgumentParser()
 parser.add_argument('--parent_dir',
-                    default='experiments/dropout_rate',
+                    default='experiments/learning_rate_decay_factor',
                     help='Directory containing params.json')
 parser.add_argument('--data_dir',
                     default='data/224x224_images',
@@ -89,6 +89,7 @@ if __name__ == "__main__":
         launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)
     """
 
+    """
     # Perform search over dropout rate
     dropout_rates = [0.1, 0.2]
 
@@ -99,6 +100,17 @@ if __name__ == "__main__":
         # Launch job (name has to be unique)
         job_name = "dropout_rate_{}".format(dropout_rate)
         launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)
+    """
 
+    # Perform search over learning rate decay factor
+    decay_factors = [0.5, 0.2]
+
+    for decay_factor in decay_factors:
+        # Modify the relevant parameter in params
+        params.learning_rate_decay_factor = decay_factor
+
+        # Launch job (name has to be unique)
+        job_name = "learning_rate_decay_factor_{}".format(decay_factor)
+        launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)    
 
 
