@@ -76,6 +76,7 @@ if __name__ == "__main__":
         launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)
     """
 
+    """
     # Perform search over L2 penalty
     L2_penalties = [1e-4, 1e-3]
 
@@ -85,6 +86,18 @@ if __name__ == "__main__":
 
         # Launch job (name has to be unique)
         job_name = "L2_penalty_{}".format(L2_penalty)
+        launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)
+    """
+
+    # Perform search over dropout rate
+    dropout_rates = [0.1, 0.2]
+
+    for dropout_rate in dropout_rates:
+        # Modify the relevant parameter in params
+        params.dropout_rate = dropout_rate
+
+        # Launch job (name has to be unique)
+        job_name = "dropout_rate_{}".format(dropout_rate)
         launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)
 
 
