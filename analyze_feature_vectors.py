@@ -104,6 +104,10 @@ def extract_feature_vectors(model, data_loader, parameters, features_file_path):
 def average_distance_between_vectors(vectors, distance):
     """
     Returns the average distance between pairs of vectors in a given list of vectors.
+
+    Arguments:
+        vectors: (list) list of NumPy arrays
+        distance: (function) function that takes two NumPy arrays and returns a real number
     """
     average_distance = utils.RunningAverage()
     for vector_1, vector_2 in itertools.combinations(vectors, r=2): # All pairs of vectors
