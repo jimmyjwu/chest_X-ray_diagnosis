@@ -8,7 +8,7 @@ import argparse
 import logging
 import os
 import itertools
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 
 # Scientific and deep learning modules
 import numpy
@@ -25,23 +25,21 @@ import model.data_loader as data_loader
 # Configure user arguments for this script
 argument_parser = argparse.ArgumentParser()
 argument_parser.add_argument('--data_directory', default='data/224x224_images', help='Directory containing the dataset')
+argument_parser.add_argument('-small',
+                             action='store_true', # Sets arguments.small to False by default
+                             help='Use small dataset instead of full dataset')
+
 argument_parser.add_argument('--model_directory', default='experiments/base_model', help='Directory containing params.json')
+argument_parser.add_argument('--restore_file',
+                             default='best',
+                             help='File in --model_directory containing weights to load, e.g. "best" or "last" (default: "best")')
 
 argument_parser.add_argument('--features_directory',
                              default='feature_data',
                              help='Directory containing files related to feature extraction')
-
-argument_parser.add_argument('--restore_file',
-                             default='best',
-                             help='File in --model_dir containing weights to load, e.g. "best" or "last" (default: "best")')
-
 argument_parser.add_argument('--features_file',
                              default='train_features_and_labels.txt',
                              help='File in --features_directory to which features should be saved')
-
-argument_parser.add_argument('-small',
-                             action='store_true', # Sets arguments.small to False by default
-                             help='Use small dataset instead of full dataset')
 
 
 def extract_feature_vectors(model, data_loader, parameters, features_file_path):
