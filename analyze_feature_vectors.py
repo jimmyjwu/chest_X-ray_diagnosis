@@ -190,20 +190,9 @@ if __name__ == '__main__':
     # Set random seed for reproducible experiments
     torch.manual_seed(230)
     if parameters.cuda: torch.cuda.manual_seed(230)
-        
+
     # Configure logger
     utils.set_logger(os.path.join(arguments.features_directory, 'analyze_feature_vectors.log'))
-
-    # Create data loader for training data
-    logging.info('Loading ' + ('small ' if arguments.small else '') + 'train dataset...')
-    train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters, arguments.small)['train']
-    logging.info('...done.')
-
-    # Configure model
-    model = net.DenseNet169(parameters, return_features=True).cuda() if parameters.cuda else net.DenseNet169(parameters, return_features=True)
-
-    # Load weights from trained model
-    utils.load_checkpoint(os.path.join(arguments.model_directory, arguments.restore_file + '.pth.tar'), model)
 
     # Features file should be under features_directory; prepend 'small_' if user specifies '--small'
     features_file_name = ('small_' if arguments.small else '') + arguments.features_file
@@ -214,6 +203,19 @@ if __name__ == '__main__':
         logging.info('Features file detected; skipping feature extraction')
     else:
         logging.info('Features file not detected; now extracting features...')
+
+        # Create data loader for training data
+        logging.info('Loading ' + ('small ' if arguments.small else '') + 'train dataset...')
+        train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters, arguments.small)['train']
+        logging.info('...done.')
+
+        # Configure model
+        model = net.DenseNet169(parameters, return_features=True)
+        if parameters.cuda: model = model.cuda()
+
+        # Load weights from trained model
+        utils.load_checkpoint(os.path.join(arguments.model_directory, arguments.restore_file + '.pth.tar'), model)
+
         extract_feature_vectors(model, train_data_loader, parameters, features_file_path)
         logging.info('...done.')
 
