@@ -143,6 +143,7 @@ class EmbeddingDataset(Dataset):
         self.transform = transform
         self.classIndices = classIndices
 
+
     def __len__(self):
         """
         Returns the size of the dataset.
@@ -163,7 +164,7 @@ class EmbeddingDataset(Dataset):
         image = Image.open(self.image_names[idx]).convert('RGB')  # PIL image
         if self.transform is not None:
             image = self.transform(image)
-        return image, self.positive_sampling(idx)
+        return image, self.positive_sampling(idx), idx
 
     def positive_sampling(self, idx):
         if np.sum(self.labels[idx]) == 0:
@@ -178,7 +179,7 @@ class EmbeddingDataset(Dataset):
                 if class_num[classIdx] > 0:
                     choice = np.random.choice(self.classIndices[classIdx], class_num[classIdx], replace=False)
                     pos_sample[index:index+choice.shape[0]] = choice
-        return torch.FloatTensor(pos_sample)
+        return torch.LongTensor(pos_sample)
 
 
 

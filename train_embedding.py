@@ -60,18 +60,18 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters):
 
     # Use tqdm for progress bar
     with tqdm(total=len(data_loader)) as t:
-        for i, (train_batch, labels_batch) in enumerate(data_loader):
+        for i, (train_batch, pos_sample_batch, indices_batch) in enumerate(data_loader):
             
             # Move to GPU if available
             if parameters.cuda:
-                train_batch, labels_batch = train_batch.cuda(async=True), labels_batch.cuda(async=True)
+                train_batch, pos_sample_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True)
             
             # Convert to torch Variables
-            train_batch, labels_batch = Variable(train_batch), Variable(labels_batch)
+            train_batch, pos_sample_batch, indices_batch = Variable(train_batch), Variable(pos_sample_batch), Variable(indices_batch, requires_grad=False)
 
             # Compute model output and loss
             _, output_batch = model(train_batch)
-            loss = loss_fn(output_batch, labels_batch, 10)
+            loss = loss_fn(indices_batch, pos_sample_batch, output_batch, 10)
 
             # Clear previous gradients, compute gradients of all variables wrt loss
             optimizer.zero_grad()
@@ -84,7 +84,7 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters):
             if i % parameters.save_summary_steps == 0:
                 # extract data from torch Variable, move to cpu, convert to numpy arrays
                 output_batch = output_batch.data.cpu().numpy()
-                labels_batch = labels_batch.data.cpu().numpy()
+                pos_sample_batch = pos_sample_batch.data.cpu().numpy()
                 # compute all metrics on this batch                
                 summary['loss'].append(loss.data[0])
 

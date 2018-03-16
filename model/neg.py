@@ -27,11 +27,8 @@ class NEG_loss(nn.Module):
         self.num_classes = num_classes
         self.embed_size = embed_size
 
-        self.out_embed = nn.Embedding(self.num_classes, self.embed_size, sparse=True)
-        self.out_embed.weight = Parameter(t.FloatTensor(self.num_classes, self.embed_size).uniform_(-1, 1))
-
-        self.in_embed = nn.Embedding(self.num_classes, self.embed_size, sparse=True)
-        self.in_embed.weight = Parameter(t.FloatTensor(self.num_classes, self.embed_size).uniform_(-1, 1))
+        self.embed = nn.Embedding(self.num_classes, self.embed_size, sparse=True)
+        self.embed.weight = Parameter(t.FloatTensor(self.num_classes, self.embed_size).uniform_(-0.01, 0.01))
 
         self.weights = weights
         if self.weights is not None:
@@ -45,22 +42,25 @@ class NEG_loss(nn.Module):
         """
         return t.multinomial(self.weights, num_sample, True)
 
-    def forward(self, input_labes, out_labels, num_sampled):
+    def forward(self, input_label, pos_sample_indices, update_batch, num_sampled):
         """
-        :param input_labes: Tensor with shape of [batch_size] of Long type
-        :param out_labels: Tensor with shape of [batch_size, window_size] of Long type
+        :param input_label: Tensor with shape of [batch_size] of Long type
+        :param pos_sample_indices: Tensor with shape of [batch_size, window_size] of Long type
         :param num_sampled: An int. The number of sampled from noise examples
         :return: Loss estimation with shape of [1]
             loss defined in Mikolov et al. Distributed Representations of Words and Phrases and their Compositionality
             papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality.pdf
         """
 
-        use_cuda = self.out_embed.weight.is_cuda
 
-        [batch_size, window_size] = out_labels.size()
+        [batch_size, window_size] = pos_sample_indices.size()
 
-        input = self.in_embed(input_labes.repeat(1, window_size).contiguous().view(-1))
-        output = self.out_embed(out_labels.contiguous().view(-1))
+        for i in range(batch_size):
+            print(input_label[i], self.embed.weight.data[input_label[i]])
+            self.embed.weight.data[input_label[i]] = update_batch[i]
+
+        input = self.embed(input_label.repeat(1, window_size).contiguous().view(-1))
+        output = self.embed(pos_sample_indices.contiguous().view(-1))
 
         if self.weights is not None:
             noise_sample_count = batch_size * window_size * num_sampled
@@ -70,9 +70,7 @@ class NEG_loss(nn.Module):
             noise = Variable(t.Tensor(batch_size * window_size, num_sampled).
                              uniform_(0, self.num_classes - 1).long())
 
-        if use_cuda:
-            noise = noise.cuda()
-        noise = self.out_embed(noise).neg()
+        noise = self.embed(noise).neg()
 
         log_target = (input * output).sum(1).squeeze().sigmoid().log()
 
@@ -81,8 +79,8 @@ class NEG_loss(nn.Module):
         sum_log_sampled = t.bmm(noise, input.unsqueeze(2)).sigmoid().log().sum(1).squeeze()
 
         loss = log_target + sum_log_sampled
-
+        print(loss)
         return -loss.sum() / batch_size
 
     def input_embeddings(self):
-        return self.in_embed.weight.data.cpu().numpy()
+        return self.embed.weight.data.cpu().numpy()
