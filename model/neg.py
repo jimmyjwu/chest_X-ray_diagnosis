@@ -62,6 +62,8 @@ class NEG_loss(nn.Module):
         input = self.embed(input_label.repeat(1, window_size).contiguous().view(-1))
         output = self.embed(pos_sample_indices.contiguous().view(-1))
 
+        # 'noise' is a Variable containing, in each cell, an index for a uniform random
+        # example (not guaranteed to be examples from a non-positive class)
         if self.weights is not None:
             noise_sample_count = batch_size * window_size * num_sampled
             draw = self.sample(noise_sample_count)
