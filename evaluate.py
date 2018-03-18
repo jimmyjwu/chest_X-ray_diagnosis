@@ -128,7 +128,7 @@ if __name__ == '__main__':
     # Set random seed for reproducible experiments
     torch.manual_seed(230)
     if parameters.cuda: torch.cuda.manual_seed(230)
-        
+
     # Configure logger
     utils.set_logger(os.path.join(arguments.model_dir, 'evaluate.log'))
 
