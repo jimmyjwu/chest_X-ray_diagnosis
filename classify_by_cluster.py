@@ -97,10 +97,11 @@ def main():
     train_features_file_path = os.path.join(arguments.features_directory, train_features_file_name)
     evaluation_features_file_path = os.path.join(arguments.features_directory, evaluation_features_file_name)
 
-    # Exit if user-specified feature vectors file does not exist
-    if not os.path.isfile(features_file_path):
-        logging.info('Features file not detected; please generate one by extracting feature vectors from a model, for example by running analyze_feature_vectors.py.')
-        return
+    # Exit if user-specified feature vector files do not exist
+    for features_file_path in [train_features_file_path, evaluation_features_file_path]:
+        if not os.path.isfile(features_file_path):
+            logging.info('Features file(s) not detected; please generate them by extracting feature vectors from a model, for example by running analyze_feature_vectors.py.')
+            return
 
     # Read feature vectors from files
     train_feature_vectors, train_label_vectors = utils.read_feature_and_label_vectors(train_features_file_path)
