@@ -198,6 +198,8 @@ def write_feature_and_label_vectors(features_file_path, feature_vectors, label_v
         label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
         number_of_features: (int) the number of feature values in each line of feature_file
     """
+    logging.info('Writing feature and label vectors to {}...'.format(features_file_path))
+
     with open(features_file_path, 'w') as features_file:
 
         for features, labels in zip(feature_vectors, label_vectors):
@@ -210,6 +212,8 @@ def write_feature_and_label_vectors(features_file_path, feature_vectors, label_v
 
             # Convert feature/label values to strings and write them out as a space-separated line
             features_file.write(' '.join(features_and_labels_strings) + '\n')
+
+    logging.info('...done.')
 
 
 def read_feature_and_label_vectors(features_file_path, number_of_features=1024):
@@ -227,7 +231,7 @@ def read_feature_and_label_vectors(features_file_path, number_of_features=1024):
         feature_vectors: (list of NumPy arrays) where the i-th array is the i-th example's features
         label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
     """
-    logging.info('Loading feature and label vectors...')
+    logging.info('Loading feature and label vectors from {}...'.format(features_file_path))
 
     feature_vectors, label_vectors = [], []
     with open(features_file_path, 'r') as features_file:
