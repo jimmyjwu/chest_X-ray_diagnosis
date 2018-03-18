@@ -44,91 +44,52 @@ argument_parser.add_argument('--features_file',
 
 def extract_feature_vectors(model, data_loader, parameters, features_file_path):
     """
-    Extracts feature vectors from the training set and stores them, along with labels, in a file.
+    Extracts feature vectors from the training set and writes them, along with labels, to a file.
 
     Arguments:
         model: (torch.nn.Module) a neural network
         data_loader: (DataLoader) a torch.utils.data.DataLoader object that fetches data
         parameters: (Params) hyperparameters object
-        features_file_path: (string) name of the Python file to which the features and labels should be written
+        features_file_path: (string) name of the file to which the features and labels should be written
     """
-    with open(features_file_path, 'w') as features_file:
-
-        # Set model to evaluation mode
-        model.eval()
-
-        # Show progress bar while iterating over mini-batches
-        with tqdm(total=len(data_loader)) as progress_bar:
-            for i, (X_batch, Y_batch) in enumerate(data_loader):
-
-                # Dimensions of the input Tensor
-                batch_size, channels, height, width = X_batch.size()
-
-                # If GPU available, enable CUDA on data
-                if parameters.cuda:
-                    X_batch = X_batch.cuda()
-                    Y_batch = Y_batch.cuda()
-
-                # Wrap the input tensor in a Torch Variable
-                X_batch_variable = Variable(X_batch, volatile=True)
-
-                # Run the model on this batch of inputs, obtaining a Variable of predicted labels and a Variable of features
-                Y_predicted, features = model(X_batch_variable)
-
-                """
-                Convert the Variable (of size [batch_size, 1024]) of features for this batch to a NumPy array of the same size
-                Notes:
-                    - ".data" returns the Tensor that underlies the Variable
-                    - ".cpu()" moves the Tensor from the GPU to the CPU
-                    - ".numpy()" converts a Tensor to a NumPy array
-                """
-                features_numpy = features.data.cpu().numpy()
-
-                # Move the labels Tensor (of size [batch_size, 14]) to CPU and convert it to a NumPy array
-                Y_numpy = Y_batch.cpu().numpy()
-
-                # For each example in the batch, write its features and labels to a file
-                for i in range(batch_size):
-
-                    # Concatenate the i-th example's features and labels
-                    features_and_labels = numpy.concatenate((features_numpy[i,:], Y_numpy[i,:]))
-
-                    # Convert feature/label values to strings and write them out as a space-separated line
-                    features_file.write(' '.join(map(str, features_and_labels)) + '\n')
-
-                progress_bar.update()
-
-
-def load_feature_and_label_vectors(features_file_path, number_of_features=1024):
-    """
-    Loads feature vectors and label vectors from a file.
-
-    Arguments:
-        features_file_path: (string) name of a file in which each line contains one example's features and labels
-        number_of_features: (int) the number of feature values in each line of feature_file
-
-    Returns:
-        feature_vectors: (list of NumPy arrays) where the i-th array is the i-th example's features
-        label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
-    """
-    logging.info('Loading feature vectors...')
-
     feature_vectors, label_vectors = [], []
-    with open(features_file_path, 'r') as features_file:
 
-        # Each line in features_file contains 1024 feature values followed by
-        # 14 space-separated strings (either '0.0' or '1.0') indicating labels
-        for line in features_file:
-            features_and_labels = line.split()
+    # Set model to evaluation mode
+    model.eval()
 
-            # Record features for this example in a NumPy array of floats
-            feature_vectors.append(numpy.fromiter(features_and_labels[0:number_of_features], float))
+    # Show progress bar while iterating over mini-batches
+    with tqdm(total=len(data_loader)) as progress_bar:
+        for i, (X_batch, Y_batch) in enumerate(data_loader):
 
-            # Record classes for this example in a NumPy array of floats
-            label_vectors.append(numpy.fromiter(features_and_labels[-14:], float))
+            # Dimensions of the input Tensor
+            batch_size, channels, height, width = X_batch.size()
 
-    logging.info('...done.')
-    return feature_vectors, label_vectors
+            # If GPU available, enable CUDA on data
+            if parameters.cuda:
+                X_batch = X_batch.cuda()
+                Y_batch = Y_batch.cuda()
+
+            # Wrap the input tensor in a Torch Variable
+            X_batch_variable = Variable(X_batch, volatile=True)
+
+            # Run the model on this batch of inputs, obtaining a Variable of predicted labels and a Variable of features
+            Y_predicted, features = model(X_batch_variable)
+
+            # Convert the features Variable (of size [batch_size, 1024]) to a Tensor, move it to
+            # CPU, and convert it to a NumPy array
+            features_numpy = features.data.cpu().numpy()
+
+            # Move the labels Tensor (of size [batch_size, 14]) to CPU and convert it to a NumPy array
+            Y_numpy = Y_batch.cpu().numpy()
+
+            # For each example in the batch, record its features and labels
+            for j in range(batch_size):
+                feature_vectors.append(features_numpy[j,:])
+                label_vectors.append(Y_numpy[j,:])
+
+            progress_bar.update()
+
+    utils.write_feature_and_label_vectors(features_file_path, feature_vectors, label_vectors)
 
 
 def average_distance_between_vectors(vectors, distance):
@@ -147,7 +108,7 @@ def average_distance_between_vectors(vectors, distance):
 
 def analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distance):
     """
-    Loads feature vectors and labels from a file and prints information about their clustering
+    Reads feature vectors and labels from a file and prints information about their clustering
     properties. Here, we think of the space of feature vectors, and consider a vector v_i to be in
     cluster j if j is one of the labels for example i.
 
@@ -159,7 +120,7 @@ def analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distan
         features_file_path: (string) name of a file in which each line contains one example's features and labels
         distance: (function) a symmetric distance function on pairs of vectors
     """
-    feature_vectors, label_vectors = load_feature_and_label_vectors(features_file_path)
+    feature_vectors, label_vectors = utils.read_feature_and_label_vectors(features_file_path)
 
     logging.info('Building clusters...')
 
