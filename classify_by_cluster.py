@@ -66,7 +66,7 @@ def train_and_evaluate_k_nearest_neighbors(train_feature_vectors, train_label_ve
 
     # Make predictions (a probability for each label) on the evaluation set
     print('Making predictions')
-    y_predict = classifier.predict_proba(X_test)
+    y_predict = model.predict_proba(X_test)
 
     # Compute AUROCs for each individual class
     class_AUROCs = net.accuracy(y_predict, y_test)
