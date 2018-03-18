@@ -58,12 +58,12 @@ def train_and_evaluate_k_nearest_neighbors(train_feature_vectors, train_label_ve
 
     # Fit/"train" a k-nearest neighbors model to the training data
     model = MLkNN(k=10)
-    print('Fitting model')
+    logging.info('Fitting model')
     model.fit(X_train, y_train)
 
     # Make predictions (a probability for each label) on the evaluation set
-    print('Making predictions')
-    y_predict = model.predict_proba(X_test)
+    logging.info('Making predictions')
+    y_predict = model.predict_proba(X_test).toarray() # Convert SciPy sparse matrix to NumPy array
 
     # Compute AUROCs for each individual class
     class_AUROCs = net.accuracy(y_predict, y_test)
