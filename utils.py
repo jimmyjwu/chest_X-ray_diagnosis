@@ -203,7 +203,7 @@ def write_feature_and_label_vectors(features_file_path, feature_vectors, label_v
         for features, labels in zip(feature_vectors, label_vectors):
 
             # Concatenate this example's features and labels
-            features_and_labels = numpy.concatenate(features, labels)
+            features_and_labels = numpy.concatenate((features, labels))
 
             # Cast feature/label values to strings
             features_and_labels_strings = map(str, features_and_labels)
