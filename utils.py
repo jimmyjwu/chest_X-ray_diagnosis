@@ -185,6 +185,69 @@ def L1_distance(vector_1, vector_2):
     return numpy.linalg.norm(vector_1 - vector_2, ord=1)
 
 
+def write_feature_and_label_vectors(features_file_path, feature_vectors, label_vectors, number_of_features=1024):
+    """
+    Writes feature vectors and label vectors to a file.
+
+    The file is formatted so that the i-th line contains the i-th example's features followed by
+    labels, all separated by spaces.
+
+    Arguments:
+        features_file_path: (string) name of the file to write to
+        feature_vectors: (list of NumPy arrays) where the i-th array is the i-th example's features
+        label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
+        number_of_features: (int) the number of feature values in each line of feature_file
+    """
+    with open(features_file_path, 'w') as features_file:
+
+        for features, labels in zip(feature_vectors, label_vectors):
+
+            # Concatenate this example's features and labels
+            features_and_labels = numpy.concatenate(features, labels)
+
+            # Cast feature/label values to strings
+            features_and_labels_strings = map(str, features_and_labels)
+
+            # Convert feature/label values to strings and write them out as a space-separated line
+            features_file.write(' '.join(features_and_labels_strings) + '\n')
+
+
+def read_feature_and_label_vectors(features_file_path, number_of_features=1024):
+    """
+    Reads feature vectors and label vectors from a file and returns them.
+
+    The file must formatted as in the output of write_feature_and_label_vectors(), i.e. the i-th
+    line contains the i-th example's features followed by labels, all separated by spaces.
+
+    Arguments:
+        features_file_path: (string) name of the file to read from
+        number_of_features: (int) the number of feature values in each line of feature_file
+
+    Returns:
+        feature_vectors: (list of NumPy arrays) where the i-th array is the i-th example's features
+        label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
+    """
+    logging.info('Loading feature and label vectors...')
+
+    feature_vectors, label_vectors = [], []
+    with open(features_file_path, 'r') as features_file:
+
+        # Each line in features_file contains 1024 feature values followed by
+        # 14 space-separated strings (either '0.0' or '1.0') indicating labels
+        for line in features_file:
+            features_and_labels = line.split()
+
+            # Record features for this example in a NumPy array of floats
+            feature_vectors.append(numpy.fromiter(features_and_labels[0:number_of_features], float))
+
+            # Record classes for this example in a NumPy array of floats
+            label_vectors.append(numpy.fromiter(features_and_labels[-14:], float))
+
+    logging.info('...done.')
+    return feature_vectors, label_vectors
+
+
+
 
 
 
