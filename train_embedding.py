@@ -201,7 +201,7 @@ if __name__ == '__main__':
                                                      patience=parameters.learning_rate_decay_patience,
                                                      verbose=True) # Print message every time learning rate is reduced
     num_train_data = 3924 # need to change this!!!
-    loss = neg.NEG_loss(num_train_data, 1024)
+    loss = neg.NEG_loss(num_train_data, 1664)
 
     # Train the model
     logging.info('Starting training for {} epoch(s)'.format(parameters.num_epochs))
