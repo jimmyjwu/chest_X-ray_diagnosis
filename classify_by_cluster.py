@@ -46,18 +46,15 @@ def train_and_evaluate_k_nearest_neighbors(train_feature_vectors, train_label_ve
     """
     logging.info('Starting evaluation of k-nearest neighbors')
 
+    logging.info('Converting datasets to NumPy')
+
     # NumPy arrays where X[i,j] is the j-th feature value for the i-th example
-    print('Converting X_train to NumPy...')
     X_train = numpy.array(train_feature_vectors, dtype=numpy.float64)
-    print('Converting X_test to NumPy...')
     X_test = numpy.array(evaluation_feature_vectors, dtype=numpy.float64)
 
     # NumPy arrays where y[i,j] is 1 if the i-th example has label j, and 0 otherwise
-    print('Converting y_train to NumPy...')
     y_train = numpy.array(train_label_vectors, dtype=int)
-    print('Converting y_test to NumPy...')
     y_test = numpy.array(evaluation_label_vectors, dtype=int)
-    logging.info('...done.')
 
     # Fit/"train" a k-nearest neighbors model to the training data
     model = MLkNN(k=10)
