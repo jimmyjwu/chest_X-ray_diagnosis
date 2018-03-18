@@ -79,15 +79,12 @@ def main():
     # Load user arguments
     arguments = argument_parser.parse_args()
 
-    # Load hyperparameters from JSON file
-    parameters = utils.Params(os.path.join(arguments.model_directory, 'params.json'))
-
     # Record whether GPU is available
-    parameters.cuda = torch.cuda.is_available()
+    CUDA_is_available = torch.cuda.is_available()
 
     # Set random seed for reproducible experiments
     torch.manual_seed(230)
-    if parameters.cuda: torch.cuda.manual_seed(230)
+    if CUDA_is_available: torch.cuda.manual_seed(230)
 
     # Configure logger
     utils.set_logger(os.path.join(arguments.features_directory, 'classify_by_cluster.log'))
