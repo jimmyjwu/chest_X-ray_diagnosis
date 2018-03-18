@@ -44,7 +44,11 @@ argument_parser.add_argument('--features_file',
 
 def extract_feature_vectors(model, data_loader, parameters, features_file_path):
     """
-    Extracts feature vectors from the training set and writes them, along with labels, to a file.
+    Extracts feature vectors from a given model and dataset and writes them, along with labels, to a file.
+
+    This function works for any model whose forward() method returns, on any given input x, the pair
+            (prediction on x, feature vector for x)
+    and more generally, any model whose second return value is a feature vector.
 
     Arguments:
         model: (torch.nn.Module) a neural network
