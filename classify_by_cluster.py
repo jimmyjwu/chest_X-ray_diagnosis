@@ -12,6 +12,8 @@ import torch
 from torch.autograd import Variable
 from tqdm import tqdm
 from skmultilearn.adapt.mlknn import MLkNN
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 # Project modules
 import utils
@@ -36,13 +38,13 @@ argument_parser.add_argument('--dataset_type',
 
 def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation):
     """
-    Trains a k-nearest neighbors model and evaluates its performance against specified metrics.
+    Trains a multi-label k-nearest neighbors model and evaluates its performance.
 
     Arguments:
-        train_feature_vectors: (list of NumPy arrays) where the i-th array is the i-th training example's features
-        train_label_vectors: (list of NumPy arrays) where the i-th array is the i-th training example's labels
-        evaluation_feature_vectors: (list of NumPy arrays) where the i-th array is the i-th evaluation example's features
-        evaluation_label_vectors: (list of NumPy arrays) where the i-th array is the i-th evaluation example's labels
+        X_train: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th training example
+        y_train: (2D NumPy array) where y[i,j] is 1 if the i-th training example has label j, and 0 otherwise
+        X_evaluation: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th evaluation example
+        y_evaluation: (2D NumPy array) where y[i,j] is 1 if the i-th evaluation example has label j, and 0 otherwise
     """
     logging.info('Starting evaluation of k-nearest neighbors')
 
@@ -54,6 +56,33 @@ def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_eva
     # Make predictions (a probability for each label) on the evaluation set
     logging.info('Making predictions')
     y_predict = model.predict_proba(X_evaluation).toarray() # Convert SciPy sparse matrix to NumPy array
+
+    # Compute AUROCs for each individual class
+    class_AUROCs = net.accuracy(y_predict, y_evaluation)
+
+    return class_AUROCs
+
+
+def train_and_evaluate_decision_tree(X_train, y_train, X_evaluation, y_evaluation):
+    """
+    Trains a multi-label decision tree model and evaluates its performance.
+
+    Arguments:
+        X_train: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th training example
+        y_train: (2D NumPy array) where y[i,j] is 1 if the i-th training example has label j, and 0 otherwise
+        X_evaluation: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th evaluation example
+        y_evaluation: (2D NumPy array) where y[i,j] is 1 if the i-th evaluation example has label j, and 0 otherwise
+    """
+    logging.info('Starting evaluation of k-nearest neighbors')
+
+    # Fit/"train" a k-nearest neighbors model to the training data
+    model = OneVsRestClassifier(DecisionTreeClassifier())
+    logging.info('Fitting model')
+    model.fit(X_train, y_evaluation)
+
+    # Make predictions (a probability for each label) on the evaluation set
+    logging.info('Making predictions')
+    y_predict = model.predict_proba(X_evaluation)
 
     # Compute AUROCs for each individual class
     class_AUROCs = net.accuracy(y_predict, y_evaluation)
@@ -95,7 +124,7 @@ def main():
     X_evaluation, y_evaluation = utils.read_feature_and_label_matrices(evaluation_features_file_path)
 
     # Evaluate the model
-    class_AUROCs = train_and_evaluate_k_nearest_neighbors(train_feature_vectors, train_label_vectors, evaluation_feature_vectors, evaluation_label_vectors)
+    class_AUROCs = train_and_evaluate_decision_tree(X_train, y_train, X_evaluation, y_evaluation)
 
     # Print average AUROC and individual class AUROCs
     logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(AUROCs)))
