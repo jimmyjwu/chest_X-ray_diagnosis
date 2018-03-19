@@ -269,10 +269,13 @@ def read_feature_and_label_matrices(features_and_labels_file_path, features_data
     """
     feature_vectors, label_vectors = read_feature_and_label_vectors(features_and_labels_file_path, number_of_features)
 
+    logging.info('Converting features and labels to NumPy...')
+
     # Copy 1D NumPy arrays into new 2D NumPy arrays
     X = numpy.array(feature_vectors, dtype=features_data_type)
     y = numpy.array(label_vectors, dtype=labels_data_type)
 
+    logging.info('...done.')
     return X, y
 
 
