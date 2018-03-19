@@ -34,7 +34,7 @@ argument_parser.add_argument('--dataset_type',
                              help='Which part of the dataset to evaluate, i.e. "val" (default), or "test"')
 
 
-def train_and_evaluate_k_nearest_neighbors(train_feature_vectors, train_label_vectors, evaluation_feature_vectors, evaluation_label_vectors):
+def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation):
     """
     Trains a k-nearest neighbors model and evaluates its performance against specified metrics.
 
@@ -46,27 +46,17 @@ def train_and_evaluate_k_nearest_neighbors(train_feature_vectors, train_label_ve
     """
     logging.info('Starting evaluation of k-nearest neighbors')
 
-    logging.info('Converting datasets to NumPy')
-
-    # NumPy arrays where X[i,j] is the j-th feature value for the i-th example
-    X_train = numpy.array(train_feature_vectors, dtype=numpy.float64)
-    X_test = numpy.array(evaluation_feature_vectors, dtype=numpy.float64)
-
-    # NumPy arrays where y[i,j] is 1 if the i-th example has label j, and 0 otherwise
-    y_train = numpy.array(train_label_vectors, dtype=int)
-    y_test = numpy.array(evaluation_label_vectors, dtype=int)
-
     # Fit/"train" a k-nearest neighbors model to the training data
     model = MLkNN(k=10)
     logging.info('Fitting model')
-    model.fit(X_train, y_train)
+    model.fit(X_train, y_evaluation)
 
     # Make predictions (a probability for each label) on the evaluation set
     logging.info('Making predictions')
-    y_predict = model.predict_proba(X_test).toarray() # Convert SciPy sparse matrix to NumPy array
+    y_predict = model.predict_proba(X_evaluation).toarray() # Convert SciPy sparse matrix to NumPy array
 
     # Compute AUROCs for each individual class
-    class_AUROCs = net.accuracy(y_predict, y_test)
+    class_AUROCs = net.accuracy(y_predict, y_evaluation)
 
     return class_AUROCs
 
@@ -100,9 +90,9 @@ def main():
             logging.info('Features file(s) not detected; please generate them by extracting feature vectors from a model, for example by running analyze_feature_vectors.py.')
             return
 
-    # Read feature vectors from files
-    train_feature_vectors, train_label_vectors = utils.read_feature_and_label_vectors(train_features_file_path)
-    evaluation_feature_vectors, evaluation_label_vectors = utils.read_feature_and_label_vectors(evaluation_features_file_path)
+    # Read features and labels from files
+    X_train, y_train = utils.read_feature_and_label_matrices(train_features_file_path)
+    X_evaluation, y_evaluation = utils.read_feature_and_label_matrices(evaluation_features_file_path)
 
     # Evaluate the model
     class_AUROCs = train_and_evaluate_k_nearest_neighbors(train_feature_vectors, train_label_vectors, evaluation_feature_vectors, evaluation_label_vectors)
