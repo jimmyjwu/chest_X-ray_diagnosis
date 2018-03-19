@@ -14,6 +14,7 @@ from tqdm import tqdm
 from skmultilearn.adapt.mlknn import MLkNN
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 # Project modules
 import utils
@@ -63,20 +64,21 @@ def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_eva
     return class_AUROCs
 
 
-def train_and_evaluate_decision_tree(X_train, y_train, X_evaluation, y_evaluation):
+def train_and_evaluate_multilabel_classifier_from_binary_classifier(BinaryClassifier, X_train, y_train, X_evaluation, y_evaluation, binary_classifier_arguments={}):
     """
-    Trains a multi-label decision tree model and evaluates its performance.
+    Instantiates a multi-label model based on a given binary classifier, trains it, and evaluates its performance.
 
     Arguments:
+        BinaryClassifier: (class) a scikit-learn binary classifier class
         X_train: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th training example
         y_train: (2D NumPy array) where y[i,j] is 1 if the i-th training example has label j, and 0 otherwise
         X_evaluation: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th evaluation example
         y_evaluation: (2D NumPy array) where y[i,j] is 1 if the i-th evaluation example has label j, and 0 otherwise
     """
-    logging.info('Starting evaluation of decision trees')
+    logging.info('Starting evaluation of a multi-label classifier based on ' + BinaryClassifier.__name__)
 
     # Fit/"train" a k-nearest neighbors model to the training data
-    model = OneVsRestClassifier(DecisionTreeClassifier())
+    model = OneVsRestClassifier(BinaryClassifier(**binary_classifier_arguments))
     logging.info('Fitting model')
     model.fit(X_train, y_train)
 
@@ -124,7 +126,12 @@ def main():
     X_evaluation, y_evaluation = utils.read_feature_and_label_matrices(evaluation_features_file_path)
 
     # Evaluate the model
-    class_AUROCs = train_and_evaluate_decision_tree(X_train, y_train, X_evaluation, y_evaluation)
+    RANDOM_FOREST_ARGUMENTS = {
+        'n_estimators': 10,
+        'max_depth': 10,
+        'n_jobs': -1, # Use all available CPUs
+    }
+    class_AUROCs = train_and_evaluate_multilabel_classifier_from_binary_classifier(RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation)
 
     # Print average AUROC and individual class AUROCs
     logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(class_AUROCs)))
