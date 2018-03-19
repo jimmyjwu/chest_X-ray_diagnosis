@@ -51,7 +51,7 @@ def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_eva
     # Fit/"train" a k-nearest neighbors model to the training data
     model = MLkNN(k=10)
     logging.info('Fitting model')
-    model.fit(X_train, y_evaluation)
+    model.fit(X_train, y_train)
 
     # Make predictions (a probability for each label) on the evaluation set
     logging.info('Making predictions')
@@ -78,7 +78,7 @@ def train_and_evaluate_decision_tree(X_train, y_train, X_evaluation, y_evaluatio
     # Fit/"train" a k-nearest neighbors model to the training data
     model = OneVsRestClassifier(DecisionTreeClassifier())
     logging.info('Fitting model')
-    model.fit(X_train, y_evaluation)
+    model.fit(X_train, y_train)
 
     # Make predictions (a probability for each label) on the evaluation set
     logging.info('Making predictions')
