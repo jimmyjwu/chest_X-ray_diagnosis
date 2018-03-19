@@ -37,9 +37,9 @@ argument_parser.add_argument('--restore_file',
 argument_parser.add_argument('--features_directory',
                              default='feature_data',
                              help='Directory containing files related to feature extraction')
-argument_parser.add_argument('--features_file',
-                             default='train_features_and_labels.txt',
-                             help='File in --features_directory to which features should be saved')
+argument_parser.add_argument('--dataset_type',
+                             default='train',
+                             help='Which part of the dataset to analyze, i.e. "train" (default), "val", or "test"')
 
 
 def extract_feature_vectors(model, data_loader, parameters, features_file_path):
@@ -176,8 +176,10 @@ if __name__ == '__main__':
     # Configure logger
     utils.set_logger(os.path.join(arguments.features_directory, 'analyze_feature_vectors.log'))
 
-    # Features file should be under features_directory; prepend 'small_' if user specifies '--small'
-    features_file_name = ('small_' if arguments.small else '') + arguments.features_file
+    # Features file name is of the form
+    #       features_directory/{train, val, test}_features_and_labels.txt
+    # with 'small_' prepended if user specifies '--small'
+    features_file_name = ('small_' if arguments.small else '') + arguments.dataset_type + '_features_and_labels.txt'
     features_file_path = os.path.join(arguments.features_directory, features_file_name)
 
     # Extract feature vectors and write out to user-specified file (if such file does not yet exist)
@@ -186,9 +188,9 @@ if __name__ == '__main__':
     else:
         logging.info('Features file not detected; now extracting features...')
 
-        # Create data loader for training data
-        logging.info('Loading ' + ('small ' if arguments.small else '') + 'train dataset...')
-        train_data_loader = data_loader.fetch_dataloader(['train'], arguments.data_directory, parameters, arguments.small)['train']
+        # Create data loader for the revelant part (train, val, or test) of the dataset
+        logging.info('Loading ' + ('small ' if arguments.small else '') + arguments.dataset_type + ' dataset...')
+        train_data_loader = data_loader.fetch_dataloader([arguments.dataset_type], arguments.data_directory, parameters, arguments.small)[arguments.dataset_type]
         logging.info('...done.')
 
         # Configure model
@@ -202,10 +204,8 @@ if __name__ == '__main__':
         logging.info('...done.')
 
     # Read feature vectors and labels and print information about them
-    logging.info('Analyzing features...')
     analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distance)
     analyze_feature_vector_clusters(features_file_path, distance=utils.L1_distance)
-    logging.info('...done.')
 
 
 
