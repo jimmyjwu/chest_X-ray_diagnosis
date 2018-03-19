@@ -251,6 +251,29 @@ def read_feature_and_label_vectors(features_file_path, number_of_features=1024):
     return feature_vectors, label_vectors
 
 
+def read_feature_and_label_matrices(features_and_labels_file_path, features_data_type=numpy.float64, labels_data_type=int, number_of_features=1024):
+    """
+    Reads feature vectors and label vectors from a file and returns them as X and y matrices
+    suitable for immediate use by scikit-learn.
+
+    The file must formatted as in the output of write_feature_and_label_vectors(), i.e. the i-th
+    line contains the i-th example's features followed by labels, all separated by spaces.
+
+    Arguments:
+        features_file_path: (string) name of the file to read from
+        number_of_features: (int) the number of feature values in each line of feature_file
+
+    Returns:
+        X: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th example
+        y: (2D NumPy array) where y[i,j] is 1 if the i-th example has label j, and 0 otherwise
+    """
+    feature_vectors, label_vectors = read_feature_and_label_vectors(features_and_labels_file_path, number_of_features)
+
+    # Copy 1D NumPy arrays into new 2D NumPy arrays
+    X = numpy.array(feature_vectors, dtype=features_data_type)
+    y = numpy.array(label_vectors, dtype=labels_data_type)
+
+    return X, y
 
 
 
