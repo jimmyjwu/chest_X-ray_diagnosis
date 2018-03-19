@@ -49,19 +49,24 @@ def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_eva
     """
     logging.info('Starting evaluation of k-nearest neighbors')
 
-    # Fit/"train" a k-nearest neighbors model to the training data
-    model = MLkNN(k=10)
     logging.info('Fitting model')
+
+    # Fit a k-nearest neighbors model to the training data
+    model = MLkNN(k=10)
     model.fit(X_train, y_train)
 
-    # Make predictions (a probability for each label) on the evaluation set
-    logging.info('Making predictions')
-    y_predict = model.predict_proba(X_evaluation).toarray() # Convert SciPy sparse matrix to NumPy array
+    logging.info('Evaluating model')
 
-    # Compute AUROCs for each individual class
-    class_AUROCs = net.accuracy(y_predict, y_evaluation)
+    # Make predictions (a probability for each label) on the training set, compute AUROCs, log the average AUROC
+    y_train_predict = model.predict_proba(X_train).toarray() # Convert SciPy sparse matrix to NumPy array
+    train_AUROCs = net.accuracy(y_train_predict, y_train)
+    logging.info('- Training metrics : mean AUROC: {:05.3f}'.format(numpy.mean(train_AUROCs)))
 
-    return class_AUROCs
+    # Make predictions (a probability for each label) on the evaluation set, compute AUROCs, log them all
+    y_evaluation_predict = model.predict_proba(X_evaluation).toarray() # Convert SciPy sparse matrix to NumPy array
+    evaluation_AUROCs = net.accuracy(y_evaluation_predict, y_evaluation)
+    logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(evaluation_AUROCs)))
+    utils.print_class_accuracy(evaluation_AUROCs)
 
 
 def train_and_evaluate_multilabel_classifier_from_binary_classifier(BinaryClassifier, X_train, y_train, X_evaluation, y_evaluation, binary_classifier_arguments={}):
@@ -77,19 +82,24 @@ def train_and_evaluate_multilabel_classifier_from_binary_classifier(BinaryClassi
     """
     logging.info('Starting evaluation of a multi-label classifier based on ' + BinaryClassifier.__name__)
 
-    # Fit/"train" a k-nearest neighbors model to the training data
-    model = OneVsRestClassifier(BinaryClassifier(**binary_classifier_arguments))
     logging.info('Fitting model')
+
+    # Fit a model to the training data
+    model = OneVsRestClassifier(BinaryClassifier(**binary_classifier_arguments))
     model.fit(X_train, y_train)
 
-    # Make predictions (a probability for each label) on the evaluation set
-    logging.info('Making predictions')
-    y_predict = model.predict_proba(X_evaluation)
+    logging.info('Evaluating model')
 
-    # Compute AUROCs for each individual class
-    class_AUROCs = net.accuracy(y_predict, y_evaluation)
+    # Make predictions (a probability for each label) on the training set, compute AUROCs, log the average AUROC
+    y_train_predict = model.predict_proba(X_train)
+    train_AUROCs = net.accuracy(y_train_predict, y_train)
+    logging.info('- Training metrics : mean AUROC: {:05.3f}'.format(numpy.mean(train_AUROCs)))
 
-    return class_AUROCs
+    # Make predictions (a probability for each label) on the evaluation set, compute AUROCs, log them all
+    y_evaluation_predict = model.predict_proba(X_evaluation)
+    evaluation_AUROCs = net.accuracy(y_evaluation_predict, y_evaluation)
+    logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(evaluation_AUROCs)))
+    utils.print_class_accuracy(evaluation_AUROCs)
 
 
 
@@ -131,11 +141,8 @@ def main():
         'max_depth': 10,
         'n_jobs': -1, # Use all available CPUs
     }
-    class_AUROCs = train_and_evaluate_multilabel_classifier_from_binary_classifier(RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation)
+    train_and_evaluate_multilabel_classifier_from_binary_classifier(RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation)
 
-    # Print average AUROC and individual class AUROCs
-    logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(class_AUROCs)))
-    utils.print_class_accuracy(class_AUROCs)
 
 
 
