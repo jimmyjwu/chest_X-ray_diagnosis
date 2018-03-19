@@ -278,5 +278,13 @@ def read_feature_and_label_matrices(features_and_labels_file_path, features_data
     return X, y
 
 
+def sample_examples_by_class(X, y, sample_fraction):
+    """
+    Given examples as matrices X and y, returns matrices X_sample and y_sample representing a random
+    subset of the examples/rows, in such a way that every label occupies the same proportion of the
+    sampled data as it does in the original data.
+    """
+    pass
+
 
 
