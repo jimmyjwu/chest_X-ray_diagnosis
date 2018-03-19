@@ -73,7 +73,7 @@ def train_and_evaluate_decision_tree(X_train, y_train, X_evaluation, y_evaluatio
         X_evaluation: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th evaluation example
         y_evaluation: (2D NumPy array) where y[i,j] is 1 if the i-th evaluation example has label j, and 0 otherwise
     """
-    logging.info('Starting evaluation of k-nearest neighbors')
+    logging.info('Starting evaluation of decision trees')
 
     # Fit/"train" a k-nearest neighbors model to the training data
     model = OneVsRestClassifier(DecisionTreeClassifier())
