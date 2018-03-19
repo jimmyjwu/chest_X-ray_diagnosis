@@ -127,7 +127,7 @@ def main():
     class_AUROCs = train_and_evaluate_decision_tree(X_train, y_train, X_evaluation, y_evaluation)
 
     # Print average AUROC and individual class AUROCs
-    logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(AUROCs)))
+    logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(class_AUROCs)))
     utils.print_class_accuracy(class_AUROCs)
 
 
