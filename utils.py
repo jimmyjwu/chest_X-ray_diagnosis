@@ -185,7 +185,7 @@ def L1_distance(vector_1, vector_2):
     return numpy.linalg.norm(vector_1 - vector_2, ord=1)
 
 
-def write_feature_and_label_vectors(features_file_path, feature_vectors, label_vectors, number_of_features=1024):
+def write_feature_and_label_vectors(features_file_path, feature_vectors, label_vectors):
     """
     Writes feature vectors and label vectors to a file.
 
@@ -196,7 +196,6 @@ def write_feature_and_label_vectors(features_file_path, feature_vectors, label_v
         features_file_path: (string) name of the file to write to
         feature_vectors: (list of NumPy arrays) where the i-th array is the i-th example's features
         label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
-        number_of_features: (int) the number of feature values in each line of feature_file
     """
     logging.info('Writing feature and label vectors to {}...'.format(features_file_path))
 
@@ -216,7 +215,7 @@ def write_feature_and_label_vectors(features_file_path, feature_vectors, label_v
     logging.info('...done.')
 
 
-def read_feature_and_label_vectors(features_file_path, number_of_features=1024):
+def read_feature_and_label_vectors(features_file_path, number_of_labels=14):
     """
     Reads feature vectors and label vectors from a file and returns them.
 
@@ -236,22 +235,22 @@ def read_feature_and_label_vectors(features_file_path, number_of_features=1024):
     feature_vectors, label_vectors = [], []
     with open(features_file_path, 'r') as features_file:
 
-        # Each line in features_file contains 1024 feature values followed by
-        # 14 space-separated strings (either '0.0' or '1.0') indicating labels
+        # Each line in features_file contains feature values (1024 for DenseNet121, 1664 for DenseNet169)
+        # followed by 14 space-separated strings (either '0.0' or '1.0') indicating labels
         for line in features_file:
             features_and_labels = line.split()
 
             # Record features for this example in a NumPy array of floats
-            feature_vectors.append(numpy.fromiter(features_and_labels[0:number_of_features], float))
+            feature_vectors.append(numpy.fromiter(features_and_labels[0:-number_of_labels], float))
 
             # Record classes for this example in a NumPy array of floats
-            label_vectors.append(numpy.fromiter(features_and_labels[-14:], float))
+            label_vectors.append(numpy.fromiter(features_and_labels[-number_of_labels:], float))
 
     logging.info('...done.')
     return feature_vectors, label_vectors
 
 
-def read_feature_and_label_matrices(features_and_labels_file_path, features_data_type=numpy.float64, labels_data_type=int, number_of_features=1024):
+def read_feature_and_label_matrices(features_and_labels_file_path, features_data_type=numpy.float64, labels_data_type=int, number_of_labels=14):
     """
     Reads feature vectors and label vectors from a file and returns them as X and y matrices
     suitable for immediate use by scikit-learn.
@@ -261,13 +260,13 @@ def read_feature_and_label_matrices(features_and_labels_file_path, features_data
 
     Arguments:
         features_file_path: (string) name of the file to read from
-        number_of_features: (int) the number of feature values in each line of feature_file
+        number_of_labels: (int) the number of label values in each line of feature_file
 
     Returns:
         X: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th example
         y: (2D NumPy array) where y[i,j] is 1 if the i-th example has label j, and 0 otherwise
     """
-    feature_vectors, label_vectors = read_feature_and_label_vectors(features_and_labels_file_path, number_of_features)
+    feature_vectors, label_vectors = read_feature_and_label_vectors(features_and_labels_file_path, number_of_labels)
 
     logging.info('Converting features and labels to NumPy...')
 
