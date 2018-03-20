@@ -204,13 +204,10 @@ def _feature_and_label_matrices_from_lists(feature_vectors, label_vectors, featu
         X: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th example
         y: (2D NumPy array) where y[i,j] is 1 if the i-th example has label j, and 0 otherwise
     """
-    logging.info('Converting features and labels from lists to NumPy matrices...')
-
     # Copy 1D NumPy arrays into new 2D NumPy arrays
     X = numpy.array(feature_vectors, dtype=features_data_type)
     y = numpy.array(label_vectors, dtype=labels_data_type)
 
-    logging.info('...done.')
     return X, y
 
 
@@ -226,15 +223,12 @@ def _feature_and_label_lists_from_matrices(X, y):
         feature_vectors: (list of NumPy arrays) where the i-th array is the i-th example's features
         label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
     """
-    logging.info('Converting features and labels from NumPy matrices to lists...')
-
     assert X.shape[0] == y.shape[0], 'X and y must have the same number of rows'
     number_of_rows = X.shape[0]
 
     feature_vectors = [X[i,:] for i in range(number_of_rows)]
     label_vectors = [y[i,:] for i in range(number_of_rows)]
 
-    logging.info('...done.')
     return feature_vectors, label_vectors
 
 
@@ -353,7 +347,7 @@ def sample_examples_by_class(X, y, sample_fraction):
     subset of the examples/rows, in such a way that every label occupies the same proportion of the
     sampled data as it does in the original data.
     """
-    logging.info('Sampling a ' + str(sample_fraction) + ' fraction of the examples...')
+    logging.info('Sampling a ' + str(sample_fraction) + ' fraction of the examples')
 
     if sample_fraction >= 1: return X, y
 
@@ -380,7 +374,6 @@ def sample_examples_by_class(X, y, sample_fraction):
     X_sample = X[sampled_indices,:]
     y_sample = y[sampled_indices,:]
 
-    logging.info('...done.')
     return X_sample, y_sample
 
 
