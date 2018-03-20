@@ -369,7 +369,8 @@ def sample_examples_by_class(X, y, sample_fraction):
     for label, indices in indices_for_label.items():
 
         # The sampled set should have the full set scaled by the sample factor
-        number_to_sample = int(len(indices) * sample_fraction)
+        # Ensure nonzero support on each class by adding 1
+        number_to_sample = int(len(indices) * sample_fraction + 1)
         sampled_indices_for_label[label] = set(random.sample(indices, number_to_sample))
 
     # Union all the sampled indices into one list to remove duplicates
