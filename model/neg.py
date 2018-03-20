@@ -56,7 +56,6 @@ class NEG_loss(nn.Module):
         [batch_size, window_size] = pos_sample_indices.size()
 
         for i in range(batch_size):
-            # import pdb; pdb.set_trace()
             feature_vector = update_batch[i].data
             qn = t.norm(feature_vector, p=2, dim=0)
 
@@ -85,10 +84,14 @@ class NEG_loss(nn.Module):
         
         sum_log_sampled = t.bmm(noise, input.unsqueeze(2)).sigmoid().log().sum(1).squeeze()
         
-        print(sum_log_sampled)
         loss = log_target + sum_log_sampled
         
         return -loss.sum() / batch_size
 
     def input_embeddings(self):
-        return self.embed.weight.data.cpu().numpy()
+        feature_vectors = []
+        for idx in range(self.embed.weight.data.shape[0]):
+            feature_vectors.append(self.embed.weight.data[idx].cpu().numpy())
+
+
+        return feature_vectors

@@ -164,20 +164,23 @@ class EmbeddingDataset(Dataset):
         image = Image.open(self.image_names[idx]).convert('RGB')  # PIL image
         if self.transform is not None:
             image = self.transform(image)
-        return image, self.positive_sampling(idx), idx
+        return image, self.positive_sampling(idx), idx, torch.LongTensor(self.labels[idx])
+
 
     def positive_sampling(self, idx):
+
         if np.sum(self.labels[idx]) == 0:
             pos_sample = np.random.choice(self.classIndices[CLASS_NUM], POS_NUM, replace=False)
         else:
+
             class_num = self.labels[idx] * class_dist
             class_num = class_num / np.sum(class_num) * POS_NUM
-            class_num.astype(int)
+            class_num_int = class_num.astype(int)
             pos_sample = np.zeros((POS_NUM, ))
             index = 0
             for classIdx in range(CLASS_NUM):
                 if class_num[classIdx] > 0:
-                    choice = np.random.choice(self.classIndices[classIdx], class_num[classIdx], replace=False)
+                    choice = np.random.choice(self.classIndices[classIdx], class_num_int[classIdx], replace=False)
                     pos_sample[index:index+choice.shape[0]] = choice
         return torch.LongTensor(pos_sample)
 

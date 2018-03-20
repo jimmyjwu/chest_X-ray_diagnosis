@@ -21,6 +21,7 @@ import model.data_loader as data_loader
 from evaluate import evaluate
 
 
+
 # Configure user arguments for this script
 argument_parser = argparse.ArgumentParser()
 argument_parser.add_argument('--data_dir', default='data/224x224_images', help='Directory containing the dataset')
@@ -28,28 +29,65 @@ argument_parser.add_argument('--model_dir', default='experiments/base_model', he
 argument_parser.add_argument('--restore_file',
                              default=None,
                              help='(Optional) File in --model_dir containing weights to load, e.g. "best" or "last"')
+argument_parser.add_argument('--feature_dir', default='data/feature', help='Directory containing feature vector')
 argument_parser.add_argument('-small',
                              action='store_true', # Sets arguments.small to False by default
                              help='Use small dataset instead of full dataset')
-argument_parser.add_argument('-use_tencrop',
-                             action='store_true', # Sets arguments.use_tencrop to False by default
-                             help='Use ten-cropping when making predictions')
+argument_parser.add_argument('-fixChestNet',
+                             action='store_true', # Sets arguments.fixChestNet to False by default
+                             help='Use the training result of chexnet and does not change it')
 
 
-def train(model, optimizer, loss_fn, data_loader, metrics, parameters):
+def loadChestNet(model, loss_fn, data_loader, parameters):
+    """
+    Load feature vector output of chest net model to embedding
+
+    Args:
+        model: (torch.nn.Module) a neural network
+        loss_fn: a function that takes indices_batch, pos_sample_batch, feature_vectors_batch, negative sampling number and computes the loss for the batch
+        data_loader: (torch.utils.data.DataLoader) a DataLoader object that fetches data
+        parameters: (Params) hyperparameters object
+    """
+
+    label_vectors = []
+    # Use tqdm for progress bar
+    with tqdm(total=len(data_loader)) as t:
+        for i, (train_batch, pos_sample_batch, indices_batch, label_batch) in enumerate(data_loader):
+            for i in range(label_batch.shape[0]):
+                label_vectors.append(label_batch[i])
+            # Move to GPU if available
+            if parameters.cuda:
+                train_batch, pos_sample_batch, indices_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True), indices_batch.cuda(async=True)
+            
+            # Convert to torch Variables
+            train_batch, pos_sample_batch, indices_batch = Variable(train_batch), Variable(pos_sample_batch), Variable(indices_batch, requires_grad=False)
+
+            # Compute model output and loss
+            _, feature_vectors_batch = model(train_batch)
+            loss = loss_fn(indices_batch, pos_sample_batch, feature_vectors_batch, 10)
+
+            t.update()
+
+    return label_vectors
+
+
+def train(model, optimizer, loss_fn, data_loader, metrics, parameters, fixChestNet):
     """
     Trains a given model.
 
     Args:
         model: (torch.nn.Module) a neural network
         optimizer: (torch.optim) optimizer for parameters of model
-        loss_fn: a function that takes batch_output and batch_labels and computes the loss for the batch
+        loss_fn: a function that takes indices_batch, pos_sample_batch, feature_vectors_batch, negative sampling number and computes the loss for the batch
         data_loader: (torch.utils.data.DataLoader) a DataLoader object that fetches training data
         metrics: (dict) a dictionary of functions that compute a metric using the output and labels of each batch
         parameters: (Params) hyperparameters object
     """
-    # Set model to training mode
-    model.train()
+    # Set model to evaluate mode if fixChestNet; train mode otherwise
+    if fixChestNet:
+        model.eval()
+    else:
+        model.train()
 
     # Summary for current training loop and a running average object for loss
     summary = {}
@@ -64,15 +102,14 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters):
             
             # Move to GPU if available
             if parameters.cuda:
-                train_batch, pos_sample_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True)
+                train_batch, pos_sample_batch, indices_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True), indices_batch.cuda(async=True)
             
             # Convert to torch Variables
             train_batch, pos_sample_batch, indices_batch = Variable(train_batch), Variable(pos_sample_batch), Variable(indices_batch, requires_grad=False)
 
             # Compute model output and loss
-            _, output_batch = model(train_batch)
-            loss = loss_fn(indices_batch, pos_sample_batch, output_batch, 10)
-
+            _, feature_vectors_batch = model(train_batch)
+            loss = loss_fn(indices_batch, pos_sample_batch, feature_vectors_batch, 10)
             # Clear previous gradients, compute gradients of all variables wrt loss
             optimizer.zero_grad()
             loss.backward()
@@ -101,7 +138,7 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters):
     logging.info("- Train metrics: " + metrics_string)
 
 
-def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, scheduler, loss_fn, metrics, parameters, model_dir, restore_file=None, use_tencrop=False):
+def train_and_evaluate(model, train_dataloader, optimizer, scheduler, loss_fn, metrics, parameters, model_dir, feature_dir, restore_file=None, fixChestNet=False):
     """
     Trains a given model and evaluates each epoch against specified metrics.
 
@@ -115,52 +152,36 @@ def train_and_evaluate(model, train_dataloader, val_dataloader, optimizer, sched
         parameters: (Params) hyperparameters object
         model_dir: (string) directory containing config, weights and log
         restore_file: (string) optional- name of file to restore from (without its extension .pth.tar)
-        use_tencrop: (bool) whether to use ten-cropping to make predictions during evaluation
     """
     # Load weights from pre-trained model if specified
     if restore_file is not None:
+        print("loading pre-trained wegiths...")
         restore_path = os.path.join(model_dir, restore_file + '.pth.tar')
         logging.info('Restoring parameters from {}'.format(restore_path))
         utils.load_checkpoint(restore_path, model, optimizer)
 
-    best_val_auroc = 0.0
+    lebel_vectors = loadChestNet(model, loss_fn, train_dataloader, parameters)
+
 
     for epoch in range(parameters.num_epochs):
 
         # Train for one epoch
         logging.info('Epoch {}/{}'.format(epoch + 1, parameters.num_epochs))
-        train(model, optimizer, loss_fn, train_dataloader, metrics, parameters)
+        train(model, optimizer, loss_fn, train_dataloader, metrics, parameters, fixChestNet)
+        if not fixChestNet:
+            # Save weights
+            utils.save_checkpoint({'epoch': epoch + 1,
+                                   'state_dict': model.state_dict(),
+                                   'optim_dict' : optimizer.state_dict()},
+                                   is_best=is_best,
+                                   checkpoint=model_dir)
 
-        # Evaluate for one epoch on validation set
-        val_metrics, val_class_auroc = evaluate(model, loss_fn, val_dataloader, metrics, parameters, use_tencrop)
+            # Save latest val metrics in a json file in the model directory
+            last_json_path = os.path.join(model_dir, 'metrics_val_last_weights.json')
+            utils.save_dict_to_json(val_metrics, last_json_path)
 
-        val_auroc = val_metrics['accuracy']
-        is_best = val_auroc >= best_val_auroc
-
-        # Adjust learning rate according to scheduler
-        scheduler.step(val_auroc)
-
-        # Save weights
-        utils.save_checkpoint({'epoch': epoch + 1,
-                               'state_dict': model.state_dict(),
-                               'optim_dict' : optimizer.state_dict()},
-                               is_best=is_best,
-                               checkpoint=model_dir)
-
-        # If this is the best AUROC thus far in training, print metrics for every class and save metrics to JSON file
-        if is_best:
-            best_val_auroc = val_auroc
-            logging.info('- Found new best accuracy: ' + str(best_val_auroc))
-            utils.print_class_accuracy(val_class_auroc)
-
-            # Save best val metrics in a json file in the model directory
-            best_json_path = os.path.join(model_dir, 'metrics_val_best_weights.json')
-            utils.save_dict_to_json(val_metrics, best_json_path)
-
-        # Save latest val metrics in a json file in the model directory
-        last_json_path = os.path.join(model_dir, 'metrics_val_last_weights.json')
-        utils.save_dict_to_json(val_metrics, last_json_path)
-
+    feature_vectors = loss_fn.input_embeddings()
+    write_feature_and_label_vectors(features_file_path, feature_vectors, label_vectors)
 
 
 if __name__ == '__main__':
@@ -184,10 +205,9 @@ if __name__ == '__main__':
     utils.set_logger(os.path.join(arguments.model_dir, 'train_embedding.log'))
 
     # Create data loaders for training and validation data
-    logging.info('Loading train and validation datasets...')
-    data_loaders = data_loader.fetch_dataloader(['train', 'val'], arguments.data_dir, parameters, arguments.small, arguments.use_tencrop, True)
+    logging.info('Loading train datasets...')
+    data_loaders = data_loader.fetch_dataloader(['train'], arguments.data_dir, parameters, arguments.small, False, True)
     train_data_loader = data_loaders['train']
-    validation_data_loader = data_loaders['val']
     logging.info('...done.')
 
     # Configure model and optimizer
@@ -200,9 +220,12 @@ if __name__ == '__main__':
                                                      factor=parameters.learning_rate_decay_factor,
                                                      patience=parameters.learning_rate_decay_patience,
                                                      verbose=True) # Print message every time learning rate is reduced
-    num_train_data = 3924 # need to change this!!!
+    if arguments.small:
+        num_train_data = 3924
+    else:
+        num_train_data = 78468
     loss = neg.NEG_loss(num_train_data, 1664)
 
     # Train the model
     logging.info('Starting training for {} epoch(s)'.format(parameters.num_epochs))
-    train_and_evaluate(model, train_data_loader, validation_data_loader, optimizer, scheduler, loss, net.metrics, parameters, arguments.model_dir, arguments.restore_file, arguments.use_tencrop)
+    train_and_evaluate(model, train_data_loader, optimizer, scheduler, loss, net.metrics, parameters, arguments.model_dir, arguments.feature_dir, arguments.restore_file, arguments.fixChestNet)
