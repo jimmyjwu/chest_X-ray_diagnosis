@@ -365,12 +365,12 @@ def sample_examples_by_class(X, y, sample_fraction):
     indices_for_label = map_labels_to_example_indices(label_vectors)
 
     # Sample a subset of each class
-    sampled_indices_for_label = OrderedDict((i, set()) for i in range(15))
+    sampled_indices_for_label = OrderedDict((label, set()) for label in range(15))
     for label, indices in indices_for_label.items():
 
         # The sampled set should have the full set scaled by the sample factor
         number_to_sample = int(len(indices) * sample_fraction)
-        sampled_indices_for_label[i] = set(random.sample(indices, number_to_sample))
+        sampled_indices_for_label[label] = set(random.sample(indices, number_to_sample))
 
     # Union all the sampled indices into one list to remove duplicates
     sampled_indices = list(set().union(*indices_for_label.values()))
