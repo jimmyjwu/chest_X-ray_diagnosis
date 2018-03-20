@@ -57,7 +57,7 @@ def loadChestNet(model, loss_fn, data_loader, parameters):
                 label_vectors.append(label_batch[i])
             # Move to GPU if available
             if parameters.cuda:
-                train_batch, pos_sample_batch, indices_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True), indices_batch.cuda(async=True)
+                train_batch, pos_sample_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True)
             
             # Convert to torch Variables
             train_batch, pos_sample_batch, indices_batch = Variable(train_batch), Variable(pos_sample_batch), Variable(indices_batch, requires_grad=False)
@@ -102,7 +102,7 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters, fixChestN
             
             # Move to GPU if available
             if parameters.cuda:
-                train_batch, pos_sample_batch, indices_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True), indices_batch.cuda(async=True)
+                train_batch, pos_sample_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True)
             
             # Convert to torch Variables
             train_batch, pos_sample_batch, indices_batch = Variable(train_batch), Variable(pos_sample_batch), Variable(indices_batch, requires_grad=False)
