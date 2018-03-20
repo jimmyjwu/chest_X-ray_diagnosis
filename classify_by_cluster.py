@@ -37,7 +37,7 @@ argument_parser.add_argument('--dataset_type',
                              help='Which part of the dataset to evaluate, i.e. "val" (default), or "test"')
 
 
-def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation, training_sample_fraction=0.01):
+def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation, k=10, training_sample_fraction=0.01):
     """
     Trains a multi-label k-nearest neighbors model and evaluates its performance.
 
@@ -48,7 +48,7 @@ def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_eva
         y_evaluation: (2D NumPy array) where y[i,j] is 1 if the i-th evaluation example has label j, and 0 otherwise
         training_sample_fraction: (float) the fraction of training examples to use when training
     """
-    logging.info('Starting evaluation of k-nearest neighbors')
+    logging.info('Starting evaluation of k-nearest neighbors with k=' + str(k))
 
     # Sample a subset of the data in a way that preserves the proportion of examples with each label
     X_train, y_train = utils.sample_examples_by_class(X_train, y_train, training_sample_fraction)
@@ -56,7 +56,7 @@ def train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_eva
     logging.info('Fitting model')
 
     # Fit a k-nearest neighbors model to the training data
-    model = MLkNN(k=10)
+    model = MLkNN(k=k)
     model.fit(X_train, y_train)
 
     logging.info('Evaluating model')
@@ -88,7 +88,7 @@ def train_and_evaluate_multilabel_classifier_from_binary_classifier(
         y_evaluation: (2D NumPy array) where y[i,j] is 1 if the i-th evaluation example has label j, and 0 otherwise
         training_sample_fraction: (float) the fraction of training examples to use when training
     """
-    logging.info('Starting evaluation of a multi-label classifier based on ' + BinaryClassifier.__name__)
+    logging.info('Starting evaluation of a multi-label classifier based on ' + BinaryClassifier.__name__ + ' with arguments ' + str(binary_classifier_arguments))
 
     # Sample a subset of the data in a way that preserves the proportion of examples with each label
     X_train, y_train = utils.sample_examples_by_class(X_train, y_train, training_sample_fraction)
@@ -147,7 +147,6 @@ def main():
     X_evaluation, y_evaluation = utils.read_feature_and_label_matrices(evaluation_features_file_path)
 
     # Evaluate the model
-    """
     RANDOM_FOREST_ARGUMENTS = {
         'n_estimators': 10,
         'max_depth': 10,
@@ -155,10 +154,10 @@ def main():
     }
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation,
-        RANDOM_FOREST_ARGUMENTS, training_sample_fraction=1.0)
+        RANDOM_FOREST_ARGUMENTS, training_sample_fraction=0.1)
     """
-    train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation, training_sample_fraction=0.0001)
-
+    train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation, k=10, training_sample_fraction=0.01)
+    """
 
 
 if __name__ == '__main__':
