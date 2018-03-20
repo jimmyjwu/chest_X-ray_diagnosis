@@ -135,7 +135,7 @@ class EmbeddingDataset(Dataset):
                 for classIdx in range(CLASS_NUM):
                     if label[classIdx] == 1:
                         classIndices[classIdx].append(len(labels))
-                if np.sum(labels) == 0:
+                if np.sum(label) == 0:
                     classIndices[CLASS_NUM].append(len(labels))
 
         self.image_names = image_names
