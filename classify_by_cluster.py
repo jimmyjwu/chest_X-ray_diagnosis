@@ -144,13 +144,15 @@ def main():
     X_evaluation, y_evaluation = utils.read_feature_and_label_matrices(evaluation_features_file_path)
 
     # Evaluate the model
+    """
     RANDOM_FOREST_ARGUMENTS = {
         'n_estimators': 10,
         'max_depth': 10,
         'n_jobs': -1, # Use all available CPUs
     }
     train_and_evaluate_multilabel_classifier_from_binary_classifier(RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation)
-
+    """
+    train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation, training_sample_fraction=0.01)
 
 
 
