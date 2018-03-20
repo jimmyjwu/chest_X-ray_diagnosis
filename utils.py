@@ -23,6 +23,11 @@ CLASS_NAMES = [
     'Hernia'
 ]
 
+# Fraction of the dataset having each label
+LABEL_DISTRIBUTION = np.array([0.14026072, 0.03008273, 0.16194535, 0.2529456, 0.07834044,
+                               0.0768363, 0.01667084, 0.06317373, 0.05602908, 0.02506894,
+                               0.0260717, 0.02080722, 0.04662823, 0.00513913])
+
 
 class Params():
     """
