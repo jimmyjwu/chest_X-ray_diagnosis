@@ -3,6 +3,7 @@ import logging
 import os
 import shutil
 import torch
+import random
 
 import numpy
 
@@ -190,6 +191,52 @@ def L1_distance(vector_1, vector_2):
     return numpy.linalg.norm(vector_1 - vector_2, ord=1)
 
 
+def _feature_and_label_matrices_from_lists(feature_vectors, label_vectors, features_data_type=numpy.float64, labels_data_type=int):
+    """
+    Given features and labels as lists of NumPy arrays, returns them as 2D NumPy arrays.
+
+    Arguments:
+        feature_vectors: (list of NumPy arrays) where the i-th array is the i-th example's features
+        label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
+
+    Returns:
+        X: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th example
+        y: (2D NumPy array) where y[i,j] is 1 if the i-th example has label j, and 0 otherwise
+    """
+    logging.info('Converting features and labels from lists to NumPy matrices...')
+
+    # Copy 1D NumPy arrays into new 2D NumPy arrays
+    X = numpy.array(feature_vectors, dtype=features_data_type)
+    y = numpy.array(label_vectors, dtype=labels_data_type)
+
+    logging.info('...done.')
+    return X, y
+
+
+def _feature_and_label_lists_from_matrices(X, y):
+    """
+    Given features and labels as 2D NumPy arrays, returns them as lists of NumPy arrays.
+
+    Arguments:
+        X: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th example
+        y: (2D NumPy array) where y[i,j] is 1 if the i-th example has label j, and 0 otherwise
+
+    Returns:
+        feature_vectors: (list of NumPy arrays) where the i-th array is the i-th example's features
+        label_vectors: (list of NumPy arrays) where the i-th array is the i-th example's labels
+    """
+    logging.info('Converting features and labels from NumPy matrices to lists...')
+
+    assert X.shape[0] == y.shape[0], 'X and y must have the same number of rows'
+    number_of_rows = X.shape[0]
+
+    feature_vectors = [X[i,:] for i in range(number_of_rows)]
+    label_vectors = [y[i,:] for i in range(number_of_rows)]
+
+    logging.info('...done.')
+    return feature_vectors, label_vectors
+
+
 def write_feature_and_label_vectors(features_file_path, feature_vectors, label_vectors):
     """
     Writes feature vectors and label vectors to a file.
@@ -271,16 +318,32 @@ def read_feature_and_label_matrices(features_and_labels_file_path, features_data
         X: (2D NumPy array) where X[i,j] is the j-th feature value for the i-th example
         y: (2D NumPy array) where y[i,j] is 1 if the i-th example has label j, and 0 otherwise
     """
+    # Read features and labels from file
     feature_vectors, label_vectors = read_feature_and_label_vectors(features_and_labels_file_path, number_of_labels)
 
-    logging.info('Converting features and labels to NumPy...')
+    # Convert features and labels into matrix form
+    return _feature_and_label_matrices_from_lists(feature_vectors, label_vectors, features_data_type, labels_data_type)
 
-    # Copy 1D NumPy arrays into new 2D NumPy arrays
-    X = numpy.array(feature_vectors, dtype=features_data_type)
-    y = numpy.array(label_vectors, dtype=labels_data_type)
 
-    logging.info('...done.')
-    return X, y
+def map_labels_to_example_indices(label_vectors):
+    """
+    Given a list of label vectors as NumPy arrays, returns a dictionary mapping
+        (class number j from 0-14) --> (list of indices i such that label_vectors[i] is class j)
+    where the class 0 is the "no disease" class.
+    """
+    indices_for_label = OrderedDict((i, []) for i in range(15))
+
+    for i, labels in enumerate(label_vectors):
+
+        # Record which disease classes (1-14) this example belongs to
+        for j, label in enumerate(labels):
+            if label == 1: indices_for_label[j+1].append(i)
+
+        # Record whether this example belongs to no classes (i.e. no disease present)
+        if all(label == 0 for label in labels):
+            indices_for_label[0].append(i)
+
+    return indices_for_label
 
 
 def sample_examples_by_class(X, y, sample_fraction):
@@ -289,7 +352,33 @@ def sample_examples_by_class(X, y, sample_fraction):
     subset of the examples/rows, in such a way that every label occupies the same proportion of the
     sampled data as it does in the original data.
     """
-    pass
+    logging.info('Sampling a ' + str(sample_fraction) + ' fraction of the examples...')
 
+    if sample_fraction >= 1: return X, y
+
+    # Convert features and labels into list form
+    feature_vectors, label_vectors = _feature_and_label_lists_from_matrices(X, y)
+
+    # Map from (integer j) --> (list of indices i such that feature_vectors[i] is in cluster j)
+    # Cluster 0 indicates no disease
+    indices_for_label = map_labels_to_example_indices(label_vectors)
+
+    # Sample a subset of each class
+    sampled_indices_for_label = OrderedDict((i, set()) for i in range(15))
+    for label, indices in indices_for_label.items():
+
+        # The sampled set should have the full set scaled by the sample factor
+        number_to_sample = int(len(indices) * sample_fraction)
+        sampled_indices_for_label[i] = set(random.sample(indices, number_to_sample))
+
+    # Union all the sampled indices into one list to remove duplicates
+    sampled_indices = list(set().union(*indices_for_label.values()))
+
+    # Keep only the rows at sampled indices
+    X_sample = X[sampled_indices,:]
+    y_sample = y[sampled_indices,:]
+
+    logging.info('...done.')
+    return X_sample, y_sample
 
 
