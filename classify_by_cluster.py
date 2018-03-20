@@ -90,6 +90,9 @@ def train_and_evaluate_multilabel_classifier_from_binary_classifier(
     """
     logging.info('Starting evaluation of a multi-label classifier based on ' + BinaryClassifier.__name__)
 
+    # Sample a subset of the data in a way that preserves the proportion of examples with each label
+    X_train, y_train = utils.sample_examples_by_class(X_train, y_train, training_sample_fraction)
+
     logging.info('Fitting model')
 
     # Fit a model to the training data
@@ -150,7 +153,9 @@ def main():
         'max_depth': 10,
         'n_jobs': -1, # Use all available CPUs
     }
-    train_and_evaluate_multilabel_classifier_from_binary_classifier(RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation)
+    train_and_evaluate_multilabel_classifier_from_binary_classifier(
+        RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation,
+        RANDOM_FOREST_ARGUMENTS, training_sample_fraction=1.0)
     """
     train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation, training_sample_fraction=0.01)
 
