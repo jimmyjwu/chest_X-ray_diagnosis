@@ -374,7 +374,7 @@ def sample_examples_by_class(X, y, sample_fraction):
         sampled_indices_for_label[label] = set(random.sample(indices, number_to_sample))
 
     # Union all the sampled indices into one list to remove duplicates
-    sampled_indices = list(set().union(*indices_for_label.values()))
+    sampled_indices = list(set().union(*sampled_indices_for_label.values()))
 
     # Keep only the rows at sampled indices
     X_sample = X[sampled_indices,:]
