@@ -130,17 +130,7 @@ def analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distan
 
     # Map from (integer j) --> (list of indices i such that feature_vectors[i] is in cluster j)
     # Cluster 0 indicates no disease
-    cluster_member_indices_for_cluster = OrderedDict((i, []) for i in range(15))
-
-    for i, (features, labels) in enumerate(zip(feature_vectors, label_vectors)):
-
-        # Record which disease classes (1-14) this example belongs to
-        for j, label in enumerate(labels):
-            if label == 1: cluster_member_indices_for_cluster[j+1].append(i)
-
-        # Record whether this example belongs to no classes (i.e. no disease present)
-        if all(label == 0 for label in labels):
-            cluster_member_indices_for_cluster[0].append(i)
+    indices_for_label = map_labels_to_example_indices(label_vectors)
 
     logging.info('...done.')
 
@@ -151,7 +141,7 @@ def analyze_feature_vector_clusters(features_file_path, distance=utils.L2_distan
     logging.info('Global average ' + distance.__name__ + ' between vectors: ' + str(global_average_distance))
 
     # Compute average distance within each cluster
-    for j, vector_indices in cluster_member_indices_for_cluster.items():
+    for j, vector_indices in indices_for_label.items():
         vectors_in_cluster = [feature_vectors[index] for index in vector_indices]
         average_cluster_distance = average_distance_between_vectors(vectors_in_cluster, distance)
         logging.info('Average ' + distance.__name__ + ' between vectors in cluster ' + str(j) + ': ' + str(average_cluster_distance))
