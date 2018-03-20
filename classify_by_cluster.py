@@ -157,7 +157,7 @@ def main():
         RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation,
         RANDOM_FOREST_ARGUMENTS, training_sample_fraction=1.0)
     """
-    train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation, training_sample_fraction=0.01)
+    train_and_evaluate_k_nearest_neighbors(X_train, y_train, X_evaluation, y_evaluation, training_sample_fraction=0.0001)
 
 
 
