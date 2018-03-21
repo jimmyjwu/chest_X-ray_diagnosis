@@ -52,6 +52,9 @@ def train_and_evaluate_k_nearest_neighbors(
         y_evaluation: (2D NumPy array) where y[i,j] is 1 if the i-th evaluation example has label j, and 0 otherwise
         classifier_arguments: (dict) a dictionary of arguments to the MLkNN classifier
         training_sample_fraction: (float) the fraction of training examples to use when training
+
+    Returns:
+        model: (skmultilearn.adapt.mlknn.MLkNN) a fitted multi-label k-nearest neighbors model
     """
     logging.info('Starting evaluation of k-nearest neighbors with arguments ' + str(classifier_arguments))
 
@@ -77,6 +80,8 @@ def train_and_evaluate_k_nearest_neighbors(
     logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(evaluation_AUROCs)))
     utils.print_class_accuracy(evaluation_AUROCs)
 
+    return model
+
 
 def train_and_evaluate_multilabel_classifier_from_binary_classifier(
         BinaryClassifier, X_train, y_train, X_evaluation, y_evaluation,
@@ -93,6 +98,9 @@ def train_and_evaluate_multilabel_classifier_from_binary_classifier(
         y_evaluation: (2D NumPy array) where y[i,j] is 1 if the i-th evaluation example has label j, and 0 otherwise
         binary_classifier_arguments: (dict) a dictionary of arguments to the BinaryClassifier
         training_sample_fraction: (float) the fraction of training examples to use when training
+
+    Returns:
+        model: (sklearn.multiclass.OneVsRestClassifier) a trained multi-label classifier
     """
     logging.info('Starting evaluation of a multi-label classifier based on ' + BinaryClassifier.__name__ + ' with arguments ' + str(binary_classifier_arguments))
 
@@ -117,6 +125,8 @@ def train_and_evaluate_multilabel_classifier_from_binary_classifier(
     evaluation_AUROCs = net.accuracy(y_evaluation_predict, y_evaluation)
     logging.info('- Evaluation metrics : mean AUROC: {:05.3f}'.format(numpy.mean(evaluation_AUROCs)))
     utils.print_class_accuracy(evaluation_AUROCs)
+
+    return model
 
 
 
@@ -171,7 +181,7 @@ def main():
         X_train, y_train, X_evaluation, y_evaluation,
         k_NEAREST_NEIGHBORS_ARGUMENTS,
         training_sample_fraction=0.01,
-        sample_distribution='uniform')
+        sample_distribution='proportional')
 
 
 
