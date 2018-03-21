@@ -60,7 +60,7 @@ def train_and_evaluate_k_nearest_neighbors(
     """
     logging.info('Starting evaluation of k-nearest neighbors with arguments ' + str(classifier_arguments))
 
-    # Sample a subset of the data in a way that preserves the proportion of examples with each label
+    # Sample a subset of the data
     X_train, y_train = utils.sample_examples_by_class(X_train, y_train, training_sample_fraction, sample_distribution)
 
     logging.info('Fitting model')
@@ -88,6 +88,7 @@ def train_and_evaluate_k_nearest_neighbors(
 def train_and_evaluate_multilabel_classifier_from_binary_classifier(
         BinaryClassifier, X_train, y_train, X_evaluation, y_evaluation,
         binary_classifier_arguments={},
+        sample_distribution='proportional',
         training_sample_fraction=1.0):
     """
     Instantiates a multi-label model based on a given binary classifier, trains it, and evaluates its performance.
@@ -106,8 +107,8 @@ def train_and_evaluate_multilabel_classifier_from_binary_classifier(
     """
     logging.info('Starting evaluation of a multi-label classifier based on ' + BinaryClassifier.__name__ + ' with arguments ' + str(binary_classifier_arguments))
 
-    # Sample a subset of the data in a way that preserves the proportion of examples with each label
-    X_train, y_train = utils.sample_examples_by_class(X_train, y_train, training_sample_fraction)
+    # Sample a subset of the data
+    X_train, y_train = utils.sample_examples_by_class(X_train, y_train, training_sample_fraction, sample_distribution)
 
     logging.info('Fitting model')
 
@@ -176,9 +177,11 @@ def main():
         LogisticRegression, X_train, y_train, X_evaluation, y_evaluation,
         {}, training_sample_fraction=0.1)
 
+    """
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         SVC, X_train, y_train, X_evaluation, y_evaluation,
         {}, training_sample_fraction=0.1)
+    """
 
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         DecisionTreeClassifier, X_train, y_train, X_evaluation, y_evaluation,
