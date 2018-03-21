@@ -171,22 +171,22 @@ def main():
     }
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         AdaBoostClassifier, X_train, y_train, X_evaluation, y_evaluation,
-        ADABOOST_ARGUMENTS, training_sample_fraction=0.1)
+        ADABOOST_ARGUMENTS, training_sample_fraction=1)
 
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         LogisticRegression, X_train, y_train, X_evaluation, y_evaluation,
-        {}, training_sample_fraction=0.1)
+        {}, training_sample_fraction=1)
 
     """
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         SVC, X_train, y_train, X_evaluation, y_evaluation,
         {}, training_sample_fraction=0.1)
     """
-
+    """
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         DecisionTreeClassifier, X_train, y_train, X_evaluation, y_evaluation,
         {}, training_sample_fraction=0.1)
-
+    """
     """
     RANDOM_FOREST_ARGUMENTS = {
         'n_estimators': 100,
