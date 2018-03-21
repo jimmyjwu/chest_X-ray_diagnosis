@@ -378,7 +378,7 @@ def sample_examples_by_class(X, y, sample_fraction, sample_distribution='proport
         # In uniform sampling, every sampled class has the same number of examples before merging
         # It should also be no greater than the number of original examples in the class
         elif sample_distribution == 'uniform':
-            number_to_sample = min( int(sample_distribution * number_of_examples / number_of_labels + 1), len(indices) )
+            number_to_sample = min( int(sample_fraction * number_of_examples / number_of_labels + 1), len(indices) )
 
         sampled_indices_for_label[label] = set(random.sample(indices, number_to_sample))
 
