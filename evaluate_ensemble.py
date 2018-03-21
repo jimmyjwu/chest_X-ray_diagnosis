@@ -47,10 +47,11 @@ argument_parser.add_argument('--dataset_type',
 
 def evaluate(neural_network_model, other_models, loss_fn, data_loader, metrics, parameters):
     """
-    Evaluates a given model.
+    Evaluates an ensemble of a given neural network model and other scikit-learn models.
 
     Args:
-        model: (torch.nn.Module) a neural network
+        neural_network_model: (torch.nn.Module) a neural network
+        other_models: (list of sciki-learn models)
         loss_fn: a function that takes batch_output and batch_labels and computes the loss for the batch
         data_loader: (torch.utils.data.DataLoader) a DataLoader object that fetches data
         metrics: (dict) a dictionary of functions that compute a metric using the output and labels of each batch
@@ -58,7 +59,7 @@ def evaluate(neural_network_model, other_models, loss_fn, data_loader, metrics, 
         use_tencrop: (bool) whether to use ten-cropping to make predictions
     """
     # Set model to evaluation mode
-    model.eval()
+    neural_network_model.eval()
 
     # Summary for current eval loop
     summary = {}
@@ -80,7 +81,7 @@ def evaluate(neural_network_model, other_models, loss_fn, data_loader, metrics, 
             input_batch, labels_batch = Variable(input_batch, volatile=True), Variable(labels_batch, volatile=True)
 
             # Compute model output
-            output_batch, features_batch = model(input_batch)
+            output_batch, features_batch = neural_network_model(input_batch)
 
             # Compute loss
             loss = loss_fn(output_batch, labels_batch)
