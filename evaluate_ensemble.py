@@ -64,7 +64,6 @@ def evaluate(neural_network_model, other_models, loss_fn, data_loader, metrics, 
     # Summary for current eval loop
     summary = {}
     summary['loss'] = []
-    summary['inputs'] = []
     summary['outputs'] = []
     summary['labels'] = []
 
@@ -103,7 +102,6 @@ def evaluate(neural_network_model, other_models, loss_fn, data_loader, metrics, 
             average_output_batch = numpy.mean(output_batches, axis=0)
 
             # Record predictions, labels, and losses for this batch
-            summary['inputs'].append(input_batch)
             summary['outputs'].append(average_output_batch)
             summary['labels'].append(labels_batch)
             summary['loss'].append(loss.data[0])
