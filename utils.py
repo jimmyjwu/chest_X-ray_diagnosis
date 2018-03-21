@@ -341,11 +341,16 @@ def map_labels_to_example_indices(label_vectors):
     return indices_for_label
 
 
-def sample_examples_by_class(X, y, sample_fraction):
+def sample_examples_by_class(X, y, sample_fraction, sample_distribution='proportional'):
     """
     Given examples as matrices X and y, returns matrices X_sample and y_sample representing a random
-    subset of the examples/rows, in such a way that every label occupies the same proportion of the
-    sampled data as it does in the original data.
+    subset of the examples/rows.
+
+    If sample_distribution = 'proportional', samples so that every label occupies the same
+    proportion of the sampled data as it does in the original data.
+
+    If sample_distribution = 'uniform', samples so that every label occupies at least a
+    1 / (number of classes) fraction of the sampled data.
     """
     logging.info('Sampling a ' + str(sample_fraction) + ' fraction of the examples')
 
@@ -358,13 +363,23 @@ def sample_examples_by_class(X, y, sample_fraction):
     # Cluster 0 indicates no disease
     indices_for_label = map_labels_to_example_indices(label_vectors)
 
+    number_of_examples = len(feature_vectors)
+    number_of_labels = len(indices_for_label.keys())
+
     # Sample a subset of each class
+    # Regardless of sampling strategy, ensure nonzero support on each class by adding 1
     sampled_indices_for_label = OrderedDict((label, set()) for label in range(15))
     for label, indices in indices_for_label.items():
 
-        # The sampled set should have the full set scaled by the sample factor
-        # Ensure nonzero support on each class by adding 1
-        number_to_sample = int(len(indices) * sample_fraction + 1)
+        # In proportional sampling, the sampled class has the full class scaled by the sample factor
+        if sample_distribution == 'proportional':
+            number_to_sample = int(len(indices) * sample_fraction + 1)
+
+        # In uniform sampling, every sampled class has the same number of examples before merging
+        # It should also be no greater than the number of original examples in the class
+        elif sample_distribution == 'uniform':
+            number_to_sample = min( int(sample_distribution * number_of_examples / number_of_labels + 1), len(indices) )
+
         sampled_indices_for_label[label] = set(random.sample(indices, number_to_sample))
 
     # Union all the sampled indices into one list to remove duplicates

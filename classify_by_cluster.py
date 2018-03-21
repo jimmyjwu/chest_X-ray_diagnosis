@@ -40,6 +40,7 @@ argument_parser.add_argument('--dataset_type',
 def train_and_evaluate_k_nearest_neighbors(
         X_train, y_train, X_evaluation, y_evaluation,
         classifier_arguments={},
+        sample_distribution='proportional',
         training_sample_fraction=0.01):
     """
     Trains a multi-label k-nearest neighbors model and evaluates its performance.
@@ -55,7 +56,7 @@ def train_and_evaluate_k_nearest_neighbors(
     logging.info('Starting evaluation of k-nearest neighbors with arguments ' + str(classifier_arguments))
 
     # Sample a subset of the data in a way that preserves the proportion of examples with each label
-    X_train, y_train = utils.sample_examples_by_class(X_train, y_train, training_sample_fraction)
+    X_train, y_train = utils.sample_examples_by_class(X_train, y_train, training_sample_fraction, sample_distribution)
 
     logging.info('Fitting model')
 
@@ -168,7 +169,9 @@ def main():
     }
     train_and_evaluate_k_nearest_neighbors(
         X_train, y_train, X_evaluation, y_evaluation,
-        k_NEAREST_NEIGHBORS_ARGUMENTS, training_sample_fraction=0.01)
+        k_NEAREST_NEIGHBORS_ARGUMENTS,
+        training_sample_fraction=0.01,
+        sample_distribution='uniform')
 
 
 
