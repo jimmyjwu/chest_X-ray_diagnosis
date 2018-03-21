@@ -119,9 +119,6 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters, fixChestN
 
             # Evaluate summaries only once in a while
             if i % parameters.save_summary_steps == 0:
-                # extract data from torch Variable, move to cpu, convert to numpy arrays
-                output_batch = output_batch.data.cpu().numpy()
-                pos_sample_batch = pos_sample_batch.data.cpu().numpy()
                 # compute all metrics on this batch                
                 summary['loss'].append(loss.data[0])
 
