@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     # Evaluate the models
     logging.info('Starting evaluation')
-    test_metrics, class_auroc = evaluate(densenet_model, [random_forest_model], net.loss_fn, test_dataloader, net.metrics, parameters, arguments.use_tencrop)
+    test_metrics, class_auroc = evaluate(densenet_model, [random_forest_model], net.loss_fn, test_dataloader, net.metrics, parameters)
     utils.print_class_accuracy(class_auroc)
     save_path = os.path.join(arguments.model_dir, 'metrics_test_{}.json'.format(arguments.restore_file))
     utils.save_dict_to_json(test_metrics, save_path)
