@@ -11,6 +11,10 @@ import numpy
 import torch
 from torch.autograd import Variable
 from tqdm import tqdm
+from skmultilearn.adapt.mlknn import MLkNN
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 # Project modules
 import utils
