@@ -15,6 +15,8 @@ from skmultilearn.adapt.mlknn import MLkNN
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 
 # Project modules
 import utils
@@ -176,9 +178,17 @@ if __name__ == '__main__':
     }
     random_forest_model = classify_by_cluster.train_and_evaluate_multilabel_classifier_from_binary_classifier(
         RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation,
-        RANDOM_FOREST_ARGUMENTS, training_sample_fraction=0.1)
+        RANDOM_FOREST_ARGUMENTS, training_sample_fraction=1)
 
+    """
+    logistic_regression_model = classify_by_cluster.train_and_evaluate_multilabel_classifier_from_binary_classifier(
+        LogisticRegression, X_train, y_train, X_evaluation, y_evaluation,
+        {}, training_sample_fraction=0.1)
 
+    SVM_model = classify_by_cluster.train_and_evaluate_multilabel_classifier_from_binary_classifier(
+        LogisticRegression, X_train, y_train, X_evaluation, y_evaluation,
+        {}, training_sample_fraction=0.1)
+    """
 
     # Evaluate the models
     logging.info('Starting evaluation')
