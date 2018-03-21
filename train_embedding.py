@@ -98,7 +98,7 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters, fixChestN
 
     # Use tqdm for progress bar
     with tqdm(total=len(data_loader)) as t:
-        for i, (train_batch, pos_sample_batch, indices_batch) in enumerate(data_loader):
+        for i, (train_batch, pos_sample_batch, indices_batch, label_batch) in enumerate(data_loader):
             
             # Move to GPU if available
             if parameters.cuda:
