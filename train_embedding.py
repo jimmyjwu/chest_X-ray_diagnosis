@@ -187,7 +187,7 @@ if __name__ == '__main__':
     arguments = argument_parser.parse_args()
 
     # Load hyperparameters from JSON file
-    json_path = os.path.join(arguments.model_dir, 'params.json')
+    json_path = os.path.join(arguments.model_dir, 'params_embedding.json')
     assert os.path.isfile(json_path), 'No json configuration file found at {}'.format(json_path)
     parameters = utils.Params(json_path)
 
