@@ -113,11 +113,11 @@ def evaluate(neural_network_model, other_models, loss_fn, data_loader, metrics, 
             t.update()
 
     # Combine labels and predictions over all batches
-    y_true = numpy.concatenate(summary['outputs'])
-    y_predicted = numpy.concatenate(summary['labels'])
+    y_true = numpy.concatenate(summary['labels'])
+    y_predicted = numpy.concatenate(summary['outputs'])
 
     # Compute mean of all metrics in summary
-    AUROCs = metrics['accuracy'](y_true, y_predicted)
+    AUROCs = metrics['accuracy'](y_predicted, y_true)
     metrics_mean = {}
     metrics_mean['accuracy'] = numpy.mean(AUROCs)
     metrics_mean['loss'] = sum(summary['loss'])/float(len(summary['loss']))
