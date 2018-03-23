@@ -17,7 +17,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-from sklearn.metrics import confusion_matrix
 
 # Project modules
 import utils
@@ -124,17 +123,6 @@ def evaluate(neural_network_model, other_models, loss_fn, data_loader, metrics, 
 
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info('- Eval metrics : ' + metrics_string)
-
-    # Compute and print the confusion matrix for each class
-    number_of_classes = y_true.shape[1]
-    class_confusion_matrices = []
-    for j in range(number_of_classes):
-        class_confusion_matrices.append( confusion_matrix(y_true[:,j], y_predicted[:,j]) )
-    utils.print_class_accuracy(class_confusion_matrices)
-
-    # Compute average confusion matrix over the classes
-    average_confusion_matrix = sum(class_confusion_matrices) / len(class_confusion_matrices)
-    print('Average confusion matrix: ' + str(average_confusion_matrix))
 
     return metrics_mean, AUROCs
 
