@@ -166,6 +166,7 @@ def main():
     X_evaluation, y_evaluation = utils.read_feature_and_label_matrices(evaluation_features_file_path)
 
     # Evaluate the model
+    """
     ADABOOST_ARGUMENTS = {
         'n_estimators': 100
     }
@@ -176,7 +177,7 @@ def main():
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         LogisticRegression, X_train, y_train, X_evaluation, y_evaluation,
         {}, training_sample_fraction=1)
-
+    """
     """
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         SVC, X_train, y_train, X_evaluation, y_evaluation,
@@ -187,7 +188,7 @@ def main():
         DecisionTreeClassifier, X_train, y_train, X_evaluation, y_evaluation,
         {}, training_sample_fraction=0.1)
     """
-    """
+
     RANDOM_FOREST_ARGUMENTS = {
         'n_estimators': 100,
         'max_depth': 5,
@@ -195,9 +196,8 @@ def main():
     }
     train_and_evaluate_multilabel_classifier_from_binary_classifier(
         RandomForestClassifier, X_train, y_train, X_evaluation, y_evaluation,
-        RANDOM_FOREST_ARGUMENTS, training_sample_fraction=0.1)
-    """
-    """
+        RANDOM_FOREST_ARGUMENTS, training_sample_fraction=1)
+
     k_NEAREST_NEIGHBORS_ARGUMENTS = {
         'k': 20,
         's': 1.0,
@@ -207,7 +207,7 @@ def main():
         k_NEAREST_NEIGHBORS_ARGUMENTS,
         training_sample_fraction=0.01,
         sample_distribution='proportional')
-    """
+
 
 
 if __name__ == '__main__':
