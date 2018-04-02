@@ -57,7 +57,7 @@ def loadChestNet(model, loss_fn, data_loader, parameters):
                 label_vectors.append(label_batch[i])
             # Move to GPU if available
             if parameters.cuda:
-                train_batch, pos_sample_batch, indices_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True), indices_batch.cuda(async=True)
+                train_batch = train_batch.cuda(async=True)
             
             # Convert to torch Variables
             train_batch, pos_sample_batch, indices_batch = Variable(train_batch), Variable(pos_sample_batch), Variable(indices_batch, requires_grad=False)
@@ -98,11 +98,11 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters, fixChestN
 
     # Use tqdm for progress bar
     with tqdm(total=len(data_loader)) as t:
-        for i, (train_batch, pos_sample_batch, indices_batch) in enumerate(data_loader):
+        for i, (train_batch, pos_sample_batch, indices_batch, label_batch) in enumerate(data_loader):
             
             # Move to GPU if available
             if parameters.cuda:
-                train_batch, pos_sample_batch, indices_batch = train_batch.cuda(async=True), pos_sample_batch.cuda(async=True), indices_batch.cuda(async=True)
+                train_batch = train_batch.cuda(async=True)
             
             # Convert to torch Variables
             train_batch, pos_sample_batch, indices_batch = Variable(train_batch), Variable(pos_sample_batch), Variable(indices_batch, requires_grad=False)
@@ -119,9 +119,6 @@ def train(model, optimizer, loss_fn, data_loader, metrics, parameters, fixChestN
 
             # Evaluate summaries only once in a while
             if i % parameters.save_summary_steps == 0:
-                # extract data from torch Variable, move to cpu, convert to numpy arrays
-                output_batch = output_batch.data.cpu().numpy()
-                pos_sample_batch = pos_sample_batch.data.cpu().numpy()
                 # compute all metrics on this batch                
                 summary['loss'].append(loss.data[0])
 
@@ -190,7 +187,7 @@ if __name__ == '__main__':
     arguments = argument_parser.parse_args()
 
     # Load hyperparameters from JSON file
-    json_path = os.path.join(arguments.model_dir, 'params.json')
+    json_path = os.path.join(arguments.model_dir, 'params_embedding.json')
     assert os.path.isfile(json_path), 'No json configuration file found at {}'.format(json_path)
     parameters = utils.Params(json_path)
 

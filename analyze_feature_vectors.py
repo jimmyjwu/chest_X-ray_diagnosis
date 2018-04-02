@@ -15,6 +15,7 @@ import numpy
 import torch
 from torch.autograd import Variable
 from tqdm import tqdm
+from sklearn.preprocessing import normalize
 
 # Project modules
 import utils
@@ -104,6 +105,10 @@ def average_distance_between_vectors(vectors, distance):
         vectors: (list) list of NumPy arrays
         distance: (function) function that takes two NumPy arrays and returns a real number
     """
+    vectors = numpy.array(vectors)
+    vectors = vectors - numpy.mean(vectors, axis=0)
+    vectors = normalize(vectors)
+    vectors = list(vectors)
     average_distance = utils.RunningAverage()
     for vector_1, vector_2 in itertools.combinations(vectors, r=2): # All pairs of vectors
         average_distance.update(distance(vector_1, vector_2))

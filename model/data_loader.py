@@ -134,10 +134,10 @@ class EmbeddingDataset(Dataset):
                 labels.append(label)
                 for classIdx in range(CLASS_NUM):
                     if label[classIdx] == 1:
-                        classIndices[classIdx].append(len(labels))
-                if np.sum(labels) == 0:
-                    classIndices[CLASS_NUM].append(len(labels))
-
+                        classIndices[classIdx].append(len(labels)-1)
+                if np.sum(label) == 0:
+                    classIndices[CLASS_NUM].append(len(labels)-1)
+        # print(classIndices)
         self.image_names = image_names
         self.labels = labels
         self.transform = transform
