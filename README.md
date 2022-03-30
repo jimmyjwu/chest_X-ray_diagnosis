@@ -3,29 +3,34 @@
 
 The goal of this project is to develop high-accuracy deep learning models for identifying 14 thoracic diseases from chest X-ray scans, as well as to localize the regions of the scans indicating disease.
 
-__Here is a [paper summarizing our methods and findings](https://goo.gl/mua7zS)__.
+__Here is a [report summarizing our methods and findings](https://goo.gl/mua7zS)__. The rest of this page contains instructions for reproducing our results.
 
 
 ---
-## How to Replicate Our Work
+## How to replicate our work
+Using our repository, you can train both deep learning (DenseNet) and shallow models on chest X-ray data, extract and analyze feature vectors, evaluate model performance, and tune hyperparameters in the same way as in our report.
 
-Notes:
-- Unless stated otherwise, run all scripts from the top-level folder of this project.
-- We recommend running this project from within an Amazon Web Services (AWS) Deep Learning Base AMI (Ubuntu), using a GPU-accelerated instance type such as `p2.xlarge`.
-- To learn about the user arguments for each script, run `[script name].py -h`.
+To begin, log in to a UNIX-based machine. We recommend using an [Amazon Web Services (AWS) Deep Learning Base AMI (Ubuntu)](https://aws.amazon.com/marketplace/pp/prodview-dxk3xpeg6znhm), on a GPU-accelerated instance type such as `p2.xlarge`.
+
+Clone this repository into your machine by running
+```
+git clone https://github.com/jimmyjwu/chest_X-ray_diagnosis.git
+cd chest_X-ray_diagnosis
+```
+Unless otherwise stated, all of the commands in the rest of this document should be executed from within the directory `/chest_X-ray_diagnosis`. To learn about the user arguments for any script, run `[script name].py -h`.
 
 
-### Preparing the Project
+### Prepare the project
 
-#### Install Dependencies
-Ensure that pip and Anaconda are installed. Then run:
+#### Install dependencies
+Ensure that [pip](https://pip.pypa.io/en/stable/) and [Anaconda](https://www.anaconda.com/) are installed. Then run
 ```
 conda install pytorch torchvision -c pytorch
 pip install -r requirements.txt
 ```
 
-#### Download the Dataset
-The NIH hosts the dataset at this [Box folder](https://nihcc.app.box.com/v/ChestXray-NIHCC/folder/36938765345). Download all the tar.gz files in `images`, and extract them to the folder `/data/images`, so that we have:
+#### Download the dataset
+The National Institutes of Health (NIH) hosts the dataset in [this Box folder](https://nihcc.app.box.com/v/ChestXray-NIHCC/folder/36938765345). Download all the `tar.gz` files under the `images` directory, and extract them to the folder `/data/images` in your local repository. Your directory structure should now look like
 ```
 data/
     images/
@@ -36,61 +41,68 @@ data/
         (112,120 images in total)
 ```
 
-#### Pre-Process the Dataset
-Run the script `build_dataset.py`, which resizes the images to 224x224 and stores them in `data/224x224_images`. (The new image size, source directory, and output directory can be adjusted via user arguments.)
-
+#### Pre-process the dataset
+The DenseNet architecture in our training code only accepts images of size 224x224. Resize the images in the dataset by running
 ```bash
 python build_dataset.py
 ```
+This downscales the images to 224x224 and stores them in `data/224x224_images`. (If desired, the new image size, source directory, and output directory can be specified via user arguments.) Your dataset is now ready for model training.
+
+**Note:** This does not split the dataset into training/validation/test sets; instead, for benchmarking purposes, this repository fixes an [official split](https://github.com/yaoli/chest_xray_14) shared by researchers who have used this dataset.
 
 
-### Training Models
+### Train models
 
-#### Train the DenseNet Model
-Run the script `train.py`, which trains a DenseNet169 model on the dataset using the hyperparameters specified in `experiments/base_model/params.json`, then stores the parameters of the model in a file.
+#### Train the DenseNet model
+To train a DenseNet169 model on the dataset, ensure that all model hyperparameters are specified in the file `experiments/base_model/params.json`, then run
 ```bash
 python train.py
 ```
+This trains a DenseNet169 model on the dataset and stores the model parameters in a file.
 
-#### Extract Feature Vectors
-Run the script `analyze_feature_vectors.py`, which runs the dataset through the trained DenseNet model and writes the feature vectors (defined as the output of the second-to-last layer of the DenseNet) to a file. It also prints information on the average distances between vectors in the dataset.
+#### Extract feature vectors
+Once a DenseNet model has been trained, it can be used to extract feature vectors from the images in the dataset. To extract features, run
 ```bash
 python analyze_feature_vectors.py
 ```
+This runs the dataset through the trained DenseNet model and writes the feature vectors (defined as the output of the second-to-last layer of the DenseNet) to a file. It also prints information on the average distances between vectors in the dataset.
 
-#### Train Non-Neural Models
-Run the script `classify_by_cluster.py`, which uses the feature vectors extracted from the DenseNet as inputs to various traditional machine learning models. By default, this script trains and evaluates (on the validation set) a random forest model and a k-nearest neighbors model.
+#### Train non-neural models
+Once feature vectors have been extracted, they can be used as examples to train various shallow (non-neural) machine learning models. To do this, run
 ```bash
 python classify_by_cluster.py
 ```
+By default, this trains (on the training set) and evaluates (on the validation set) a random forest model and a k-nearest neighbors model.
 
 
-### Evaluating Models
+### Evaluate models
 
-#### Evaluate the DenseNet Model
-Run the script `evaluate.py`, which loads the DenseNet169 model trained previously, and evaluates it on the test set.
+#### Evaluate a DenseNet model
+To evaluate your DenseNet model, run
 ```bash
 python evaluate.py
 ```
+This loads the DenseNet169 model trained previously, and evaluates it on the test set.
 
-#### Evaluate the Non-Neural Models
-Run the script `classify_by_cluster.py` with an appropriate argument to use the test set instead of the validation set:
+#### Evaluate non-neural models
+To evaluate your non-neural models, run
 ```bash
 python classify_by_cluster.py --dataset_type test
 ```
+The argument `--dataset_type test` instructs the script to evaluate on the test set instead of the validation set (default).
 
-#### Evaluate the Ensemble Model
-Run the script `evaluate_ensemble.py`, which loads the DenseNet169 model trained previously, trains any number of non-neural machine learning models on the feature vector set, and evaluates the ensemble of these models on the test set. By default, only non-neural model, namely a random forest, is used in this ensemble.
+#### Train and evaluate an ensemble model
+You can also train and evaluate an _ensemble_ model whose predictions are an average of the predictions of individual models, such as a DenseNet and any number of non-neural models. To train an ensemble model, ensure that a DenseNet model has been trained and stored, and that its feature vectors have been extracted. Then run
 ```bash
 python evaluate_ensemble.py
 ```
+This loads the model and feature vectors, trains a set of non-neural machine learning models on the feature vectors, and evaluates the ensemble (average) of these models on the test set. By default, the only non-neural model trained by this command is a random forest.
 
 
-### Running Experiments
+### Run experiments
 
-#### Perform Hyperparameter Search for the DenseNet
-
-Under the `experiments` directory you will find a file called `params.json`, which contains baseline hyperparameter settings. It looks like:
+#### Perform hyperparameter search for the DenseNet
+The file `experiments/params.json` contains baseline hyperparameter settings. It looks like this:
 ```json
 {
     "learning_rate": 1e-4,
@@ -100,7 +112,9 @@ Under the `experiments` directory you will find a file called `params.json`, whi
 }
 ```
 
-Suppose we wish to search over different learning rates. Create a new directory under `experiments`, say `experiments/learning_rate`, and create a similar `params.json` file under that directory. Then in `search_hyperparams.py`, uncomment the code block that creates a training job for each learning rate; this block looks like:
+Suppose you want to search over different learning rates. Create a new directory under `experiments`, such as `experiments/learning_rate`, which will store all the results of this experiment. Then create a `params.json` file in this directory and populate it with the base hyperparameters you want to use for this experiment.
+
+Now open the file `search_hyperparams.py`. This script contains the following code block, which creates a training job for each learning rate:
 ```python
 # Perform search over learning rate
 learning_rates = [1e-5, 1e-4, 1e-3, 1e-2]
@@ -113,14 +127,14 @@ for learning_rate in learning_rates:
     job_name = "learning_rate_{}".format(learning_rate)
     launch_training_job(args.parent_dir, args.data_dir, small_flag, job_name, params)
 ```
-Now run `search_hyperparams.py`. The results for each choice of learning rate will be stored in a directory under `experiments/learning_rate`.
-
-To display the results of this hyperparameter search in a table, run
+Uncomment this code block and run
+```
+python search_hyperparams.py
+```
+The classification results for each choice of learning rate will be stored in a new directory under `experiments/learning_rate`. You can then display the results of this hyperparameter search in a table by running
 ```
 python synthesize_results.py --parent_dir experiments/learning_rate
 ```
 
-#### Perform Experiments on Non-Neural Models
-
-Currently, there is no automated script to perform hyperparameter search for non-neural models. Instead, manually adjust the code in the `main()` function of `classify_by_cluster.py` and then run that script.
-
+#### Perform experiments on non-neural models
+Currently, there is no automated script to perform hyperparameter search for non-neural models. However, this can be manually accomplished by modifying the code in the `main()` function of `classify_by_cluster.py`, then running that script.
